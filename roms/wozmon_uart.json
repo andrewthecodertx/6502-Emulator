@@ -1,0 +1,15 @@
+{
+  "name": "wozmon_uart",
+  "binary_file": "wozmon_uart.bin",
+  "load_address": "0x7E00",
+  "size": 512,
+  "org_directives": ["0x7E00"],
+  "linker_segments": [{"name":"CODE","start":"0x007E00","end":"0x007F1B","size":"0x00011C"}],
+  "conflicts_with_bios": false,
+  "bios_protected_range": "0x8000-0x8500",
+  "build_timestamp": "2025-09-29T07:56:03Z",
+  "assembler": "ca65",
+  "linker": "ld65",
+  "config_file": "wozmon_uart.cfg",
+  "source_file": "wozmon_uart.asm"
+}

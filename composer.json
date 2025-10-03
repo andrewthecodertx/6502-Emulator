@@ -1,0 +1,23 @@
+{
+    "name": "andrewthecoder/php-6502",
+    "description": "small 6502 CPU driven computer emulator",
+    "type": "project",
+    "require-dev": {
+        "phpunit/phpunit": "^12.3",
+        "phpstan/phpstan": "^2.1"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Emulator\\": "src/",
+            "Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Andrew S Erwin",
+            "email": "andrewerwin73@gmail.com"
+        }
+    ],
+    "require": {}
+}
