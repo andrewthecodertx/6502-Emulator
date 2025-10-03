@@ -31,8 +31,8 @@ While Ben builds a physical computer, this project emulates one in software.
 1. **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/php-6502.git
-    cd php-6502
+    git clone https://github.com/your-username/6502-Emulator.git
+    cd 6502-Emulator
     ```
 
 2. **Install PHP dependencies:**
