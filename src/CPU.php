@@ -18,42 +18,41 @@ use Emulator\Bus\BusInterface;
 class CPU
 {
     public int $pc = 0;
-    public int $sp = 0;
+    public int $sp = 0xFF;
     public int $accumulator = 0;
     public int $registerX = 0;
     public int $registerY = 0;
     public int $cycles = 0;
-    public StatusRegister $status;
+
+    private array $pcTrace = [];
     public bool $halted = false;
 
     private bool $nmiPending = false;
     private bool $irqPending = false;
     private bool $resetPending = false;
     private bool $nmiLastState = true;
-    /** @var array<string, callable> */ private array $instructionHandlers = [];
-    private InstructionRegister $instructionRegister;
-    private InstructionInterpreter $interpreter;
-    private LoadStore $loadStoreHandler;
-    private Transfer $transferHandler;
-    private Arithmetic $arithmeticHandler;
-    private Logic $logicHandler;
-    private ShiftRotate $shiftRotateHandler;
-    private IncDec $incDecHandler;
-    private FlowControl $flowControlHandler;
-    private Stack $stackHandler;
-    private Flags $flagsHandler;
-    private BusInterface $bus;
     private bool $running = true;
     private bool $autoTickBus = true;
 
-    private ?CPUMonitor $monitor = null;
+    /** @var array<string, callable> */ private array $instructionHandlers = [];
 
-    public function __construct(BusInterface $bus, ?CPUMonitor $monitor = null)
-    {
-        $this->bus = $bus;
-        $this->monitor = $monitor;
-        $this->status = new StatusRegister();
-        $this->instructionRegister = new InstructionRegister();
+    private readonly InstructionInterpreter $interpreter;
+    private readonly LoadStore $loadStoreHandler;
+    private readonly Transfer $transferHandler;
+    private readonly Arithmetic $arithmeticHandler;
+    private readonly Logic $logicHandler;
+    private readonly ShiftRotate $shiftRotateHandler;
+    private readonly IncDec $incDecHandler;
+    private readonly FlowControl $flowControlHandler;
+    private readonly Stack $stackHandler;
+    private readonly Flags $flagsHandler;
+
+    public function __construct(
+        private readonly BusInterface $bus,
+        private ?CPUMonitor $monitor = null,
+        private readonly InstructionRegister $instructionRegister = new InstructionRegister(),
+        public readonly StatusRegister $status = new StatusRegister()
+    ) {
         $this->interpreter = new InstructionInterpreter($this);
         $this->loadStoreHandler = new LoadStore($this);
         $this->transferHandler = new Transfer($this);
@@ -66,14 +65,6 @@ class CPU
         $this->flagsHandler = new Flags($this);
 
         $this->initializeInstructionHandlers();
-
-        $this->pc = 0;
-        $this->sp = 0xFF;
-        $this->accumulator = 0;
-        $this->registerX = 0;
-        $this->registerY = 0;
-        $this->cycles = 0;
-        $this->halted = false;
     }
 
     public function clock(): void
@@ -122,7 +113,14 @@ class CPU
                 return;
             }
 
+            $pcBeforeRead = $this->pc;
             $opcode = $this->bus->read($this->pc);
+
+            // Track PC for debugging
+            $this->pcTrace[] = sprintf("0x%04X", $pcBeforeRead);
+            if (count($this->pcTrace) > 10) {
+                array_shift($this->pcTrace);
+            }
 
             if ($this->monitor !== null) {
                 $opcodeHex = sprintf('0x%02X', $opcode);
@@ -136,7 +134,9 @@ class CPU
             $opcodeData = $this->instructionRegister->getOpcode(sprintf('0x%02X', $opcode));
 
             if (!$opcodeData) {
-                throw new \InvalidArgumentException(sprintf("Unknown opcode: 0x%02X", $opcode));
+                fprintf(STDERR, "DEBUG: Last 10 PCs: %s\n", implode(" -> ", $this->pcTrace));
+                fprintf(STDERR, "DEBUG: Fetched opcode 0x%02X from PC 0x%04X (PC after inc: 0x%X)\n", $opcode, $pcBeforeRead, $this->pc);
+                throw new \InvalidArgumentException(sprintf("Unknown opcode: 0x%02X at PC: 0x%04X", $opcode, $pcBeforeRead));
             }
 
             // Check if opcode has execution metadata for JSON-driven execution

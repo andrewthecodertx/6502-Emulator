@@ -31,7 +31,7 @@ ZP_INPUT_IDX = $05    ; Input buffer index
 .org $8000
 
 ;-----------------------------------------------------------------------------
-; RESET - System initialization entry point
+; RESET - System initialization entry point (Cold Start)
 ;-----------------------------------------------------------------------------
 RESET:
     SEI                 ; Disable interrupts
@@ -59,6 +59,53 @@ RESET:
     ; Run memory test
     JSR MEMORY_TEST
 
+    JMP COMMON_START
+
+;-----------------------------------------------------------------------------
+; WARM_START - Entry point when called from running system (like Wozmon)
+; This is at $8000 + some offset - check your assembled listing
+;-----------------------------------------------------------------------------
+WARM_START:
+    SEI                 ; Disable interrupts
+    CLD                 ; Clear decimal mode
+    
+    ; Don't reset stack pointer if it looks reasonable
+    TSX
+    CPX #$E0            ; Is SP reasonable? (>= $E0)
+    BCS @skip_stack     ; Yes, don't reset it
+    LDX #$FF            ; No, initialize it
+    TXS
+@skip_stack:
+
+    ; Clear only our specific zero page variables
+    LDA #$00
+    STA ZP_PTR_LO
+    STA ZP_PTR_HI
+    STA ZP_TEMP
+    STA ZP_HEX_LO
+    STA ZP_HEX_HI
+    STA ZP_INPUT_IDX
+
+    ; Check if UART is already working before reinitializing
+    LDA UART_STATUS
+    AND #UART_TDRE      ; Transmit ready?
+    BNE @skip_uart      ; UART seems to be working
+    JSR UART_INIT       ; Initialize only if needed
+@skip_uart:
+
+    ; Display warm start message
+    LDA #<MSG_WARM_START
+    STA ZP_PTR_LO
+    LDA #>MSG_WARM_START
+    STA ZP_PTR_HI
+    JSR PRINT_STRING
+
+    ; Fall through to common start
+
+;-----------------------------------------------------------------------------
+; COMMON_START - Common initialization for both cold and warm starts
+;-----------------------------------------------------------------------------
+COMMON_START:
     ; Display ready message
     LDA #<MSG_READY
     STA ZP_PTR_LO
@@ -72,6 +119,13 @@ RESET:
     ; System ready - infinite loop waiting for programs
 MAIN_LOOP:
     JSR UART_CHECK      ; Check for incoming data
+    
+    ; Add small delay to prevent overwhelming the system
+    LDX #$20
+@delay:
+    DEX
+    BNE @delay
+    
     JMP MAIN_LOOP
 
 ;-----------------------------------------------------------------------------
@@ -128,7 +182,7 @@ UART_GETCHAR:
 
 ;-----------------------------------------------------------------------------
 ; UART_CHECK - Check for and process received characters
-; Supports hex address parsing for direct jumps to programs
+; Enhanced to handle both single character and line-based input
 ;-----------------------------------------------------------------------------
 UART_CHECK:
     JSR UART_GETCHAR    ; Check for input
@@ -136,13 +190,23 @@ UART_CHECK:
 
     ; Check for special commands first
     CMP #$03            ; Ctrl+C?
-    BEQ @ctrl_c
+    BNE @not_ctrl_c
+    JMP @ctrl_c
+@not_ctrl_c:
     CMP #$0D            ; Carriage return?
+    BEQ @process_input
+    CMP #$0A            ; Line feed?
     BEQ @process_input
     CMP #$08            ; Backspace?
     BEQ @backspace
     CMP #$7F            ; DEL?
     BEQ @backspace
+
+    ; Check for quit command
+    CMP #'Q'
+    BEQ @check_quit
+    CMP #'q'
+    BEQ @check_quit
 
     ; Check if it's a hex character (0-9, A-F, a-f)
     JSR IS_HEX_CHAR
@@ -163,6 +227,30 @@ UART_CHECK:
 
 @invalid_char:
     ; Don't echo invalid characters, just ignore
+    RTS
+
+@check_quit:
+    ; Check if this is a standalone Q (quit command)
+    LDX ZP_INPUT_IDX
+    BNE @add_to_buffer  ; Not standalone, treat as hex if valid
+    
+    ; Standalone Q - quit to previous system
+    LDA #'Q'
+    JSR UART_PUTCHAR    ; Echo the Q
+    JSR @process_quit
+    RTS
+
+@add_to_buffer:
+    ; Treat Q as hex character if in middle of input
+    LDA #'Q'
+    JSR IS_HEX_CHAR
+    BCC @invalid_char
+    LDX ZP_INPUT_IDX
+    CPX #$04
+    BCS @done
+    JSR UART_PUTCHAR
+    STA ZP_INPUT_BUF,X
+    INC ZP_INPUT_IDX
     RTS
 
 @backspace:
@@ -212,6 +300,28 @@ UART_CHECK:
 @show_prompt:
     JSR SHOW_PROMPT
     RTS
+
+@process_quit:
+    ; Send newline
+    LDA #$0D
+    JSR UART_PUTCHAR
+    LDA #$0A
+    JSR UART_PUTCHAR
+    
+    ; Show exit message
+    LDA #<MSG_EXITING
+    STA ZP_PTR_LO
+    LDA #>MSG_EXITING
+    STA ZP_PTR_HI
+    JSR PRINT_STRING
+    
+    ; Clear input buffer
+    LDX #$00
+    STX ZP_INPUT_IDX
+    
+    ; Try to return to Wozmon (common entry point)
+    ; You may need to adjust this address based on your Wozmon entry point
+    JMP $0200           ; Jump back to start of RAM program
 
 @ctrl_c:
     JSR PRINT_INFO      ; Show system info
@@ -367,15 +477,37 @@ MEMORY_TEST:
     INX
     BNE @zp_loop
 
-    ; Test stack page
+    ; Clear zero page after test (except BIOS variables $00-$0F)
+    LDX #$10
+@zp_clear:
+    LDA #$00
+    STA $00,X
+    INX
+    BNE @zp_clear
+
+    ; Test stack page (skip area used by return address)
     LDX #$00
 @stack_loop:
+    CPX #$FD            ; Don't overwrite return address area ($01FD-$01FF)
+    BCS @stack_done     ; Skip if X >= $FD
     TXA                 ; Test pattern = address
     STA $0100,X         ; Write to stack page
     CMP $0100,X         ; Read back and compare
     BNE @stack_fail
     INX
-    BNE @stack_loop
+    JMP @stack_loop
+@stack_done:
+
+    ; Clear stack page after test (except return address area)
+    LDX #$00
+@stack_clear:
+    CPX #$FD
+    BCS @clear_done
+    LDA #$00
+    STA $0100,X
+    INX
+    JMP @stack_clear
+@clear_done:
 
     ; Memory test passed
     LDA #<MSG_MEMOK
@@ -494,30 +626,37 @@ IRQ_HANDLER:
 ;-----------------------------------------------------------------------------
 MSG_BANNER:
     .byte $0D, $0A
-    .asciiz "PHP-6502 BIOS v1.1 - Program Launcher"
+    .asciiz "PHP-6502 BIOS v1.3 - Program Launcher"
     .byte $0D, $0A
-    .asciiz "Written by Andrew S Erwin"
+
+MSG_WARM_START:
+    .byte $0D, $0A
+    .asciiz "BIOS Warm Start"
+    .byte $0D, $0A
 
 MSG_MEMTEST:
     .byte $0D, $0A
     .asciiz "Testing RAM... "
 
 MSG_MEMOK:
-    .asciiz "OK"
-    .byte $0D, $0A
+    .byte "OK"
+    .byte $0D, $0A, $00
 
 MSG_ZPFAIL:
-    .asciiz "Zero Page FAIL"
+    .byte "Zero Page FAIL"
+    .byte $0D, $0A, $00
 
 MSG_STACKFAIL:
-    .asciiz "Stack FAIL"
+    .byte "Stack FAIL"
+    .byte $0D, $0A, $00
 
 MSG_SYSINFO:
     .byte $0D, $0A
     .asciiz "System Info - SP: $"
 
 MSG_READY:
-    .asciiz "Ready"
+    .byte "Ready"
+    .byte $0D, $0A, $00
 
 MSG_PROMPT:
     .asciiz "BIOS> "
@@ -527,7 +666,11 @@ MSG_JUMPING:
 
 MSG_ERROR:
     .byte $0D, $0A
-    .byte "Invalid hex address. Use 1-4 hex digits (e.g. 7E00)."
+    .byte "Invalid hex address. Use 1-4 hex digits (e.g. 7E00) or Q to quit."
+    .byte $0D, $0A, $00
+
+MSG_EXITING:
+    .byte "Exiting BIOS..."
     .byte $0D, $0A, $00
 
 ;-----------------------------------------------------------------------------
@@ -538,3 +681,4 @@ MSG_ERROR:
     .word NMI_HANDLER   ; NMI vector
     .word RESET         ; Reset vector
     .word IRQ_HANDLER   ; IRQ vector
+

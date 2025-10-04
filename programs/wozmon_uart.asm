@@ -14,8 +14,8 @@ H               = $29           ;  Hex value parsing High
 YSAV            = $2A           ;  Used to see if hex value is given
 MODE            = $2B           ;  $00=XAM, $7F=STOR, $AE=BLOCK XAM
 
-; Input buffer (UNCHANGED from original)
-IN              = $0200         ;  Input buffer to $027F
+; Input buffer (CHANGED: moved to avoid conflict with code at $0200)
+IN              = $0400         ;  Input buffer to $047F
 
 ; Hardware addresses - CHANGED from Apple 1 PIA to W65C51N UART
 ; Original Apple 1 hardware:
@@ -34,8 +34,8 @@ UART_CONTROL    = $FE03         ; Control register (Write only)
 RX_READY        = $08           ; Receiver data ready
 TX_EMPTY        = $10           ; Transmitter data register empty
 
-; CHANGED: Load address from $FF00 to $7E00 for RAM loading
-                .org $7E00
+; CHANGED: Load address from $FF00 to $0200 for RAM loading
+                .org $0200
 ; REMOVED: .export RESET (not needed for user program)
 
 RESET:          CLD             ; Clear decimal arithmetic mode.
@@ -49,11 +49,13 @@ RESET:          CLD             ; Clear decimal arithmetic mode.
 ;                STA KBDCR       ; Enable interrupts, set CA1, CB1, for
 ;                STA DSPCR       ;  positive edge sense/output mode.
 
-; NEW: W65C51N UART initialization
-                LDA #$0B        ; Enable UART, no parity, no echo, no IRQ
+; NEW: W65C51N UART initialization (match BIOS settings)
+                LDA #$1F        ; Reset command
                 STA UART_COMMAND
-                LDA #$1E        ; 9600 baud, 8 data bits, 1 stop bit
+                LDA #$0B        ; No parity, 1 stop bit, 8 data bits
                 STA UART_CONTROL
+                LDA #$19        ; Enable transmitter/receiver, DTR active
+                STA UART_COMMAND
 
 ; ADDED: Jump to proper entry point (unlike Apple 1, we need explicit jump)
                 JMP ESCAPE      ; Start with prompt

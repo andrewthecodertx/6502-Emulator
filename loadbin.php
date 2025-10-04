@@ -12,181 +12,105 @@ use Emulator\Bus\SystemBus;
 
 function showUsage(): void
 {
-  echo "Usage: php loadbin.php <program.bin>\n";
-  echo "Example: php loadbin.php wozmon_uart.bin\n";
-  echo "\n";
-  echo "This will:\n";
-  echo "1. Load BIOS ROM at \$8000 (protected)\n";
-  echo "2. Load the specified program at its intended address\n";
-  echo "3. Start the system\n";
-  exit(1);
+    echo "Usage: php loadbin.php <program.bin> [load_address]\n";
+    echo "\n";
+    echo "Examples:\n";
+    echo "  php loadbin.php bios.bin          # Load BIOS ROM (loads to \$8000)\n";
+    echo "  php loadbin.php wozmon_uart.bin   # Load program to \$0200 (default)\n";
+    echo "  php loadbin.php program.bin 7E00  # Load program to \$7E00\n";
+    echo "\n";
+    exit(1);
 }
 
-function loadMetadata(string $jsonPath): ?array
-{
-  if (!file_exists($jsonPath)) {
-    return null;
-  }
-
-  $content = file_get_contents($jsonPath);
-  if ($content === false) {
-    return null;
-  }
-
-  $metadata = json_decode($content, true);
-  if (json_last_error() !== JSON_ERROR_NONE) {
-    echo "Error: Invalid JSON in metadata file: " . json_last_error_msg() . "\n";
-    return null;
-  }
-
-  return $metadata;
-}
-
-function checkBiosConflict(array $metadata): bool
-{
-  if (isset($metadata['conflicts_with_bios']) && $metadata['conflicts_with_bios']) {
-    return true;
-  }
-
-  // Additional check - parse load_address
-  if (isset($metadata['load_address'])) {
-    $loadAddr = hexdec(str_replace('0x', '', $metadata['load_address']));
-    // BIOS space is 0x8000 to roughly 0x8500 (with safety margin)
-    if ($loadAddr >= 0x8000 && $loadAddr <= 0x8500) {
-      return true;
-    }
-  }
-
-  if (isset($metadata['linker_segments'])) {
-    foreach ($metadata['linker_segments'] as $segment) {
-      if (isset($segment['start'])) {
-        $startAddr = hexdec(str_replace('0x', '', $segment['start']));
-        if ($startAddr >= 0x8000 && $startAddr <= 0x8500) {
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
-}
-
-function loadBinaryToMemory(SystemBus $bus, string $binaryPath, array $metadata): void
-{
-  $binaryData = file_get_contents($binaryPath);
-  if ($binaryData === false) {
-    throw new RuntimeException("Could not read binary file: $binaryPath");
-  }
-
-  $loadAddress = 0x0200; // Default load address
-  if (isset($metadata['load_address'])) {
-    $loadAddress = hexdec(str_replace('0x', '', $metadata['load_address']));
-  }
-
-  echo "Loading " . basename($binaryPath) . " to 0x" . strtoupper(dechex($loadAddress)) . "\n";
-  echo "Size: " . strlen($binaryData) . " bytes\n";
-
-  $address = $loadAddress;
-  foreach (str_split($binaryData) as $byte) {
-    $bus->write($address++, ord($byte));
-  }
-}
-
-if ($argc !== 2) {
-  showUsage();
+if ($argc < 2) {
+    showUsage();
 }
 
 $programBin = $argv[1];
 $romsDir = __DIR__ . '/roms';
 $programPath = $romsDir . '/' . $programBin;
-$programJsonPath = $romsDir . '/' . pathinfo($programBin, PATHINFO_FILENAME) . '.json';
-$biosPath = $romsDir . '/bios.bin';
-$biosJsonPath = $romsDir . '/bios.json';
 
 if (!file_exists($programPath)) {
-  echo "Error: Program binary not found: $programPath\n";
-  echo "Available binaries in roms/:\n";
-  $binaries = glob($romsDir . '/*.bin');
-  foreach ($binaries as $binary) {
-    echo "  " . basename($binary) . "\n";
-  }
-  exit(1);
+    echo "Error: Program binary not found: $programPath\n";
+    echo "Available binaries in roms/:\n";
+    $binaries = glob($romsDir . '/*.bin');
+    foreach ($binaries as $binary) {
+        echo "  " . basename($binary) . "\n";
+    }
+    exit(1);
 }
 
-if (!file_exists($biosPath)) {
-  echo "Error: BIOS not found: $biosPath\n";
-  echo "Please build BIOS first.\n";
-  exit(1);
-}
-
-$programMetadata = loadMetadata($programJsonPath);
-if ($programMetadata === null) {
-  echo "Warning: No metadata found for $programBin (expected: $programJsonPath)\n";
-  echo "Using default load address 0x0200\n";
-  $programMetadata = [
-    'name' => pathinfo($programBin, PATHINFO_FILENAME),
-    'load_address' => '0x0200',
-    'size' => filesize($programPath)
-  ];
-}
-
-$biosMetadata = loadMetadata($biosJsonPath);
-if ($biosMetadata === null) {
-  echo "Warning: No BIOS metadata found\n";
-}
-
-if (checkBiosConflict($programMetadata)) {
-  echo "ERROR: Program conflicts with BIOS protected space!\n";
-  echo "BIOS occupies: 0x8000-0x8500 (protected)\n";
-  echo "Program wants: " . ($programMetadata['load_address'] ?? 'unknown') . "\n";
-  echo "\nBIOS space is sacred and cannot be overwritten.\n";
-  echo "Please modify your program to load elsewhere.\n";
-  exit(1);
-}
-
-echo "PHP-6502 System Loader\n";
-echo "======================\n";
-echo "BIOS: " . basename($biosPath) . " (protected at \$8000)\n";
-echo "Program: " . basename($programPath) . "\n";
-echo "Load Address: " . ($programMetadata['load_address'] ?? '0x0200') . "\n";
-echo "\n";
-
+// Initialize system
 $ram = new RAM();
 $rom = new ROM(null);
-
-echo "Loading BIOS into ROM...\n";
-$rom->loadBinaryROM($biosPath);
-
 $uart = new UART(0xFE00);
 $bus = new SystemBus($ram, $rom);
 $bus->addPeripheral($uart);
 
-echo "Loading program into memory...\n";
-loadBinaryToMemory($bus, $programPath, $programMetadata);
+echo "PHP-6502 Emulator\n";
+echo "=================\n\n";
 
-$cpu = new CPU($bus, null);
-
-$loadAddress = 0x0200;
-if (isset($programMetadata['load_address'])) {
-  $loadAddress = hexdec(str_replace('0x', '', $programMetadata['load_address']));
+$binaryData = file_get_contents($programPath);
+if ($binaryData === false) {
+    echo "Error: Could not read binary file: $programPath\n";
+    exit(1);
 }
 
-if ($loadAddress < 0x8000) {
-  echo "\nJumping to user program at 0x" . strtoupper(dechex($loadAddress)) . "...\n";
-  $cpu->pc = $loadAddress;
-  $cpu->sp = 0xFF; // Initialize stack pointer
-  echo "System ready!\n";
-  echo $cpu->getRegistersState() . PHP_EOL;
-  echo $cpu->getFlagsState() . PHP_EOL;
-  echo "\n";
+$size = strlen($binaryData);
+
+// Determine if this is BIOS or user program
+$isBios = (basename($programBin) === 'bios.bin');
+
+if ($isBios) {
+    // BIOS: Load into ROM at $8000
+    echo "Loading BIOS ROM...\n";
+    $rom->loadBinaryROM($programPath);
+    echo "  File: " . basename($programPath) . "\n";
+    echo "  Size: $size bytes\n";
+    echo "  Location: ROM (\$8000-\$FFFF)\n\n";
+
+    $cpu = new CPU($bus, null);
+    echo "Starting system via RESET vector...\n";
+    $cpu->reset();
 } else {
-  echo "\nStarting BIOS...\n";
-  $cpu->reset();
-  echo "System ready!\n";
-  echo $cpu->getRegistersState() . PHP_EOL;
-  echo $cpu->getFlagsState() . PHP_EOL;
-  echo "\n";
+    // User program: Load into RAM
+    // Determine load address
+    if ($argc >= 3) {
+        $loadAddress = hexdec($argv[2]);
+    } else {
+        $loadAddress = 0x0200; // Default to $0200 (after zero page and stack)
+    }
+
+    echo "Loading program into RAM...\n";
+    echo "  File: " . basename($programPath) . "\n";
+    echo "  Size: $size bytes\n";
+    echo "  Load address: \$" . strtoupper(sprintf("%04X", $loadAddress)) . "\n\n";
+
+    // Load binary into memory
+    $address = $loadAddress;
+    foreach (str_split($binaryData) as $byte) {
+        $bus->write($address++, ord($byte));
+    }
+
+    // Check if there's a BIOS to load
+    $biosPath = $romsDir . '/bios.bin';
+    if (file_exists($biosPath)) {
+        echo "Loading BIOS ROM...\n";
+        $rom->loadBinaryROM($biosPath);
+        echo "  Location: ROM (\$8000-\$FFFF)\n\n";
+    }
+
+    $cpu = new CPU($bus, null);
+
+    // Set PC to load address and initialize stack
+    $cpu->pc = $loadAddress;
+    $cpu->sp = 0xFF;
+    echo "Starting program at \$" . strtoupper(sprintf("%04X", $loadAddress)) . "...\n";
 }
+
+echo "\nSystem State:\n";
+echo $cpu->getRegistersState() . "\n";
+echo $cpu->getFlagsState() . "\n";
+echo "\n";
 
 $cpu->run();
-
