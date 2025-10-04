@@ -6,8 +6,9 @@ namespace Emulator;
 
 class InstructionInterpreter
 {
-    public function __construct(private CPU $cpu)
-    {
+    public function __construct(
+        private CPU $cpu
+    ) {
     }
 
     public function execute(Opcode $opcode): int
@@ -21,11 +22,10 @@ class InstructionInterpreter
         $type = $execution['type'] ?? null;
 
         if ($type === 'flag') {
-            // Flag operations don't return a value or update additional flags
             $this->executeFlag($execution);
             $value = 0; // Not used for flag operations
         } else {
-            $value = match($type) {
+            $value = match ($type) {
                 'transfer' => $this->executeTransfer($execution),
                 'load' => $this->executeLoad($opcode, $execution),
                 'store' => $this->executeStore($opcode, $execution),
@@ -41,9 +41,7 @@ class InstructionInterpreter
         return $opcode->getCycles();
     }
 
-    /**
-     * @param array<string, mixed> $execution
-     */
+    /** @param array<string, mixed> $execution */
     private function executeTransfer(array $execution): int
     {
         $source = $execution['source'] ?? null;
@@ -59,9 +57,7 @@ class InstructionInterpreter
         return $value;
     }
 
-    /**
-     * @param array<string, mixed> $execution
-     */
+    /** @param array<string, mixed> $execution */
     private function executeLoad(Opcode $opcode, array $execution): int
     {
         $destination = $execution['destination'] ?? null;
@@ -77,9 +73,7 @@ class InstructionInterpreter
         return $value;
     }
 
-    /**
-     * @param array<string, mixed> $execution
-     */
+    /** @param array<string, mixed> $execution */
     private function executeStore(Opcode $opcode, array $execution): int
     {
         $source = $execution['source'] ?? null;
@@ -95,9 +89,7 @@ class InstructionInterpreter
         return $value;
     }
 
-    /**
-     * @param array<string, mixed> $execution
-     */
+    /** @param array<string, mixed> $execution */
     private function executeFlag(array $execution): void
     {
         $flag = $execution['flag'] ?? null;
@@ -107,7 +99,7 @@ class InstructionInterpreter
             throw new \RuntimeException("Flag operation requires flag name and value");
         }
 
-        $flagConstant = match($flag) {
+        $flagConstant = match ($flag) {
             'CARRY' => StatusRegister::CARRY,
             'ZERO' => StatusRegister::ZERO,
             'INTERRUPT_DISABLE' => StatusRegister::INTERRUPT_DISABLE,
@@ -148,9 +140,7 @@ class InstructionInterpreter
         }
     }
 
-    /**
-     * @param array<string, mixed> $execution
-     */
+    /** @param array<string, mixed> $execution */
     private function executeLogic(Opcode $opcode, array $execution): int
     {
         $operation = $execution['operation'] ?? null;
@@ -163,7 +153,7 @@ class InstructionInterpreter
         $memoryValue = $this->cpu->getBus()->read($address);
         $accumulator = $this->cpu->getAccumulator();
 
-        $result = match($operation) {
+        $result = match ($operation) {
             '&' => $accumulator & $memoryValue,
             '|' => $accumulator | $memoryValue,
             '^' => $accumulator ^ $memoryValue,
@@ -174,9 +164,7 @@ class InstructionInterpreter
         return $result;
     }
 
-    /**
-     * @param array<string, mixed> $execution
-     */
+    /** @param array<string, mixed> $execution */
     private function executeCompare(Opcode $opcode, array $execution): int
     {
         $register = $execution['register'] ?? null;
@@ -197,7 +185,7 @@ class InstructionInterpreter
 
     private function getRegister(string $register): int
     {
-        return match($register) {
+        return match ($register) {
             'accumulator' => $this->cpu->getAccumulator(),
             'registerX' => $this->cpu->getRegisterX(),
             'registerY' => $this->cpu->getRegisterY(),
@@ -208,7 +196,7 @@ class InstructionInterpreter
 
     private function setRegister(string $register, int $value): void
     {
-        match($register) {
+        match ($register) {
             'accumulator' => $this->cpu->setAccumulator($value),
             'registerX' => $this->cpu->setRegisterX($value),
             'registerY' => $this->cpu->setRegisterY($value),
@@ -217,13 +205,11 @@ class InstructionInterpreter
         };
     }
 
-    /**
-     * @param array<string> $flags
-     */
+    /** @param array<string> $flags */
     private function updateFlags(int $value, array $flags): void
     {
         foreach ($flags as $flag) {
-            match($flag) {
+            match ($flag) {
                 'ZERO' => $this->cpu->status->set(StatusRegister::ZERO, ($value & 0xFF) === 0),
                 'NEGATIVE' => $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0),
                 'CARRY' => $this->cpu->status->set(StatusRegister::CARRY, $value >= 0),

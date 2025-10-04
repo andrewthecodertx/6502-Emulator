@@ -10,8 +10,9 @@ use Emulator\StatusRegister;
 
 class Flags
 {
-    public function __construct(private CPU $cpu)
-    {
+    public function __construct(
+        private CPU $cpu
+    ) {
     }
 
     public function sec(Opcode $opcode): int

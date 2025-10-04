@@ -8,8 +8,6 @@ use Emulator\Bus\PeripheralInterface;
 
 class UART implements PeripheralInterface
 {
-    private int $baseAddress;
-
     private const DATA_REGISTER = 0x00;    // RS1=0, RS0=0 (Read/Write)
     private const STATUS_REGISTER = 0x01;  // RS1=0, RS0=1 (Read Only)
     private const COMMAND_REGISTER = 0x02; // RS1=1, RS0=0 (Write Only)
@@ -53,9 +51,9 @@ class UART implements PeripheralInterface
     private float $stopBits = 1;                    // SBN bit: 1, 1.5, or 2 stop bits
     private bool $ctsbState = false;                // CTSB input: false=low (enabled), true=high (disabled)
 
-    public function __construct(int $baseAddress = 0xFE00)
-    {
-        $this->baseAddress = $baseAddress;
+    public function __construct(
+        private int $baseAddress = 0xFE00
+    ) {
         $this->reset();
         $this->connectToTerminal();
     }

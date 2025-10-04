@@ -6,13 +6,11 @@ namespace Emulator;
 
 class RAM
 {
-    /** @var array<int, int> */
-    private array $ram = [];
-    private ?CPUMonitor $monitor = null;
+    /** @var array<int, int> */ private array $ram = [];
 
-    public function __construct(?CPUMonitor $monitor = null)
-    {
-        $this->monitor = $monitor;
+    public function __construct(
+        private ?CPUMonitor $monitor = null
+    ) {
     }
 
     public function readByte(int $addr): int

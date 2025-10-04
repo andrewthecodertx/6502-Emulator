@@ -24,8 +24,9 @@ class CPU
     public int $registerY = 0;
     public int $cycles = 0;
 
-    private array $pcTrace = [];
     public bool $halted = false;
+
+    /** @var array<string> */ private array $pcTrace = [];
 
     private bool $nmiPending = false;
     private bool $irqPending = false;
@@ -134,16 +135,26 @@ class CPU
             $opcodeData = $this->instructionRegister->getOpcode(sprintf('0x%02X', $opcode));
 
             if (!$opcodeData) {
-                fprintf(STDERR, "DEBUG: Last 10 PCs: %s\n", implode(" -> ", $this->pcTrace));
-                fprintf(STDERR, "DEBUG: Fetched opcode 0x%02X from PC 0x%04X (PC after inc: 0x%X)\n", $opcode, $pcBeforeRead, $this->pc);
-                throw new \InvalidArgumentException(sprintf("Unknown opcode: 0x%02X at PC: 0x%04X", $opcode, $pcBeforeRead));
+                fprintf(
+                    STDERR,
+                    "DEBUG: Last 10 PCs: %s\n",
+                    implode(" -> ", $this->pcTrace)
+                );
+                fprintf(
+                    STDERR,
+                    "DEBUG: Fetched opcode 0x%02X from PC 0x%04X (PC after inc: 0x%X)\n",
+                    $opcode,
+                    $pcBeforeRead,
+                    $this->pc
+                );
+                throw new \InvalidArgumentException(
+                    sprintf("Unknown opcode: 0x%02X at PC: 0x%04X", $opcode, $pcBeforeRead)
+                );
             }
 
-            // Check if opcode has execution metadata for JSON-driven execution
             if ($opcodeData->hasExecution()) {
                 $this->cycles += $this->interpreter->execute($opcodeData);
             } else {
-                // Fall back to traditional handler-based execution
                 $mnemonic = $opcodeData->getMnemonic();
 
                 if (!isset($this->instructionHandlers[$mnemonic])) {

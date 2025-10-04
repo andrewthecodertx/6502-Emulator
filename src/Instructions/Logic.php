@@ -10,8 +10,9 @@ use Emulator\StatusRegister;
 
 class Logic
 {
-    public function __construct(private CPU $cpu)
-    {
+    public function __construct(
+        private CPU $cpu
+    ) {
     }
 
     public function and(Opcode $opcode): int
@@ -84,4 +85,3 @@ class Logic
         return $opcode->getCycles();
     }
 }
-

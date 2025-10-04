@@ -11,8 +11,7 @@ class SystemBus implements BusInterface
 {
     private RAM $ram;
     private ROM $rom;
-    /** @var array<PeripheralInterface> */
-    private array $peripherals = [];
+    /** @var array<PeripheralInterface> */ private array $peripherals = [];
 
     public function __construct(RAM $ram, ROM $rom)
     {
@@ -76,4 +75,3 @@ class SystemBus implements BusInterface
         return ($high << 8) | $low;
     }
 }
-

@@ -10,7 +10,7 @@ class IOMemory extends RAM
 
     public function __construct()
     {
-        parent::__construct();
+        parent::__construct(null);
         $this->console = new ConsoleIO();
     }
 
