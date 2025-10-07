@@ -6,20 +6,8 @@ namespace Emulator\Peripherals;
 
 use Emulator\Bus\PeripheralInterface;
 
-/**
- * Emulates the 6522 Versatile Interface Adapter (VIA)
- *
- * This class models the behavior of the WDC W65C22S chip, including:
- * - Two 8-bit bidirectional I/O ports (Port A and Port B)
- * - Two 16-bit programmable timers
- * - A serial shift register (currently placeholder)
- * - Interrupt logic
- *
- * @see http://www.westerndesigncenter.com/wdc/documentation/w65c22.pdf
- */
 class VIA implements PeripheralInterface
 {
-    // Register Offsets
     public const REG_ORB = 0x00; // Output Register B
     public const REG_ORA = 0x01; // Output Register A
     public const REG_DDRB = 0x02; // Data Direction Register B
@@ -37,7 +25,6 @@ class VIA implements PeripheralInterface
     public const REG_IER = 0x0E; // Interrupt Enable Register
     public const REG_ORA_NO_HS = 0x0F; // Output Register A (No Handshake)
 
-    // IFR/IER Flags
     public const IRQ_CA2 = 0b00000001;
     public const IRQ_CA1 = 0b00000010;
     public const IRQ_SR = 0b00000100;
@@ -49,7 +36,6 @@ class VIA implements PeripheralInterface
 
     private int $baseAddress;
 
-    // Registers
     private int $orb = 0x00;
     private int $ora = 0x00;
     private int $ddrb = 0x00;
@@ -93,7 +79,6 @@ class VIA implements PeripheralInterface
                 // Assume inputs are all high for now
                 $value = ($this->orb & $this->ddrb) | (~$this->ddrb & 0xFF);
                 break;
-
             case self::REG_ORA:
             case self::REG_ORA_NO_HS:
                 // Reading Port A clears CA1/CA2 interrupt flags
@@ -101,14 +86,12 @@ class VIA implements PeripheralInterface
                 // TODO: Implement handshake logic
                 $value = ($this->ora & $this->ddra) | (~$this->ddra & 0xFF);
                 break;
-
             case self::REG_DDRB:
                 $value = $this->ddrb;
                 break;
             case self::REG_DDRA:
                 $value = $this->ddra;
                 break;
-
             case self::REG_T1C_L:
                 $this->clearInterrupt(self::IRQ_T1);
                 $value = $this->t1c & 0xFF;
@@ -116,7 +99,6 @@ class VIA implements PeripheralInterface
             case self::REG_T1C_H:
                 $value = ($this->t1c >> 8) & 0xFF;
                 break;
-
             case self::REG_T2C_L:
                 $this->clearInterrupt(self::IRQ_T2);
                 $value = $this->t2c & 0xFF;
@@ -124,7 +106,6 @@ class VIA implements PeripheralInterface
             case self::REG_T2C_H:
                 $value = ($this->t2c >> 8) & 0xFF;
                 break;
-
             case self::REG_SR:
                 $this->clearInterrupt(self::IRQ_SR);
                 $value = $this->sr;
@@ -135,14 +116,12 @@ class VIA implements PeripheralInterface
             case self::REG_PCR:
                 $value = $this->pcr;
                 break;
-
             case self::REG_IFR:
                 $value = $this->ifr;
                 if ($this->ifr & ($this->ier & 0x7F)) {
                     $value |= self::IRQ_ANY;
                 }
                 break;
-
             case self::REG_IER:
                 $value = $this->ier | 0x80;
                 break;
@@ -166,41 +145,34 @@ class VIA implements PeripheralInterface
                 $this->clearInterrupt(self::IRQ_CA1 | self::IRQ_CA2);
                 // TODO: Handshake logic
                 break;
-
             case self::REG_DDRB:
                 $this->ddrb = $data;
                 break;
             case self::REG_DDRA:
                 $this->ddra = $data;
                 break;
-
             case self::REG_T1C_L:
             case self::REG_T1L_L:
                 $this->t1l = ($this->t1l & 0xFF00) | $data;
                 break;
-
             case self::REG_T1C_H:
                 $this->t1l = ($this->t1l & 0x00FF) | ($data << 8);
                 $this->t1c = $this->t1l;
                 $this->t1_active = true;
                 $this->clearInterrupt(self::IRQ_T1);
                 break;
-
             case self::REG_T1L_H:
                 $this->t1l = ($this->t1l & 0x00FF) | ($data << 8);
                 $this->clearInterrupt(self::IRQ_T1);
                 break;
-
             case self::REG_T2C_L:
                 $this->t2l = $data;
                 break;
-
             case self::REG_T2C_H:
                 $this->t2c = ($data << 8) | $this->t2l;
                 $this->t2_active = true;
                 $this->clearInterrupt(self::IRQ_T2);
                 break;
-
             case self::REG_SR:
                 $this->sr = $data;
                 $this->clearInterrupt(self::IRQ_SR);
@@ -211,13 +183,11 @@ class VIA implements PeripheralInterface
             case self::REG_PCR:
                 $this->pcr = $data;
                 break;
-
             case self::REG_IFR:
                 // Writing to IFR clears flags where a 1 is written
                 $this->ifr &= ~$data;
                 $this->updateIrqStatus();
                 break;
-
             case self::REG_IER:
                 if ($data & 0x80) { // Bit 7 is set
                     $this->ier |= ($data & 0x7F);
@@ -231,7 +201,6 @@ class VIA implements PeripheralInterface
 
     public function tick(): void
     {
-        // Timer 1 Logic
         if ($this->t1_active) {
             $this->t1c--;
             if ($this->t1c < 0) {
@@ -246,7 +215,6 @@ class VIA implements PeripheralInterface
             }
         }
 
-        // Timer 2 Logic (only as interval timer for now)
         if ($this->t2_active && !($this->acr & 0x20)) {
             $this->t2c--;
             if ($this->t2c < 0) {
