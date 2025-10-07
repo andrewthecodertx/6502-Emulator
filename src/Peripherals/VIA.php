@@ -43,7 +43,7 @@ class VIA implements PeripheralInterface
     private int $t1c = 0x0000;
     private int $t1l = 0x0000;
     private int $t2c = 0x0000;
-    private int $t2l = 0x0000; // T2 latch is only on T2C-L write
+    private int $t2l = 0x0000;
     private int $sr = 0x00;
     private int $acr = 0x00;
     private int $pcr = 0x00;
@@ -72,7 +72,6 @@ class VIA implements PeripheralInterface
 
         switch ($offset) {
             case self::REG_ORB:
-                // Reading Port B clears CB1/CB2 interrupt flags
                 $this->clearInterrupt(self::IRQ_CB1 | self::IRQ_CB2);
                 // TODO: Implement handshake logic
                 // For now, return a mix of output register and "inputs"
@@ -81,7 +80,6 @@ class VIA implements PeripheralInterface
                 break;
             case self::REG_ORA:
             case self::REG_ORA_NO_HS:
-                // Reading Port A clears CA1/CA2 interrupt flags
                 $this->clearInterrupt(self::IRQ_CA1 | self::IRQ_CA2);
                 // TODO: Implement handshake logic
                 $value = ($this->ora & $this->ddra) | (~$this->ddra & 0xFF);
@@ -205,12 +203,11 @@ class VIA implements PeripheralInterface
             $this->t1c--;
             if ($this->t1c < 0) {
                 $this->setInterrupt(self::IRQ_T1);
-                // Check ACR for T1 mode
                 if ($this->acr & 0x40) { // One-shot mode
                     $this->t1_active = false;
                     $this->t1c = 0xFFFF;
-                } else { // Continuous mode
-                    $this->t1c = $this->t1l; // Reload from latch
+                } else {
+                    $this->t1c = $this->t1l;
                 }
             }
         }
@@ -219,7 +216,7 @@ class VIA implements PeripheralInterface
             $this->t2c--;
             if ($this->t2c < 0) {
                 $this->setInterrupt(self::IRQ_T2);
-                $this->t2_active = false; // T2 is always one-shot as interval timer
+                $this->t2_active = false;
                 $this->t2c = 0xFFFF;
             }
         }
@@ -244,7 +241,6 @@ class VIA implements PeripheralInterface
 
     private function updateIrqStatus(): void
     {
-        // Is any enabled interrupt flag set?
         $this->irq_pending = ($this->ifr & $this->ier & 0x7F) !== 0;
     }
 }
