@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Emulator\Bus;
 
+use Emulator\CPU;
 use Emulator\RAM;
 use Emulator\ROM;
 
@@ -11,12 +12,18 @@ class SystemBus implements BusInterface
 {
     private RAM $ram;
     private ROM $rom;
+    private ?CPU $cpu = null;
     /** @var array<PeripheralInterface> */ private array $peripherals = [];
 
     public function __construct(RAM $ram, ROM $rom)
     {
         $this->ram = $ram;
         $this->rom = $rom;
+    }
+
+    public function setCpu(CPU $cpu): void
+    {
+        $this->cpu = $cpu;
     }
 
     public function addPeripheral(PeripheralInterface $peripheral): void
@@ -65,6 +72,9 @@ class SystemBus implements BusInterface
     {
         foreach ($this->peripherals as $peripheral) {
             $peripheral->tick();
+            if ($this->cpu && $peripheral->hasInterruptRequest()) {
+                $this->cpu->requestIRQ();
+            }
         }
     }
 

@@ -373,4 +373,9 @@ class UART implements PeripheralInterface
     {
         return !$this->ctsbState;
     }
+
+    public function hasInterruptRequest(): bool
+    {
+        return $this->irqPending;
+    }
 }

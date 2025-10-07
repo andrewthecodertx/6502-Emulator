@@ -10,5 +10,5 @@ interface PeripheralInterface
     public function read(int $address): int;
     public function write(int $address, int $value): void;
     public function tick(): void;
-    public function reset(): void;
+    public function hasInterruptRequest(): bool;
 }

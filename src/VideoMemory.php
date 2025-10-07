@@ -57,6 +57,11 @@ class VideoMemory implements PeripheralInterface
     {
     }
 
+    public function hasInterruptRequest(): bool
+    {
+        return false;
+    }
+
     public function reset(): void
     {
         $this->framebuffer = array_fill(0, $this->endAddress - $this->startAddress + 1, 0);

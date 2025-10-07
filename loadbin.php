@@ -9,6 +9,7 @@ use Emulator\RAM;
 use Emulator\ROM;
 use Emulator\UART;
 use Emulator\Bus\SystemBus;
+use Emulator\Peripherals\VIA;
 
 function showUsage(): void
 {
@@ -44,8 +45,10 @@ if (!file_exists($programPath)) {
 $ram = new RAM();
 $rom = new ROM(null);
 $uart = new UART(0xFE00);
+$via = new VIA(0xFE40);
 $bus = new SystemBus($ram, $rom);
 $bus->addPeripheral($uart);
+$bus->addPeripheral($via);
 
 echo "PHP-6502 Emulator\n";
 echo "=================\n\n";
@@ -70,6 +73,7 @@ if ($isBios) {
     echo "  Location: ROM (\$8000-\$FFFF)\n\n";
 
     $cpu = new CPU($bus, null);
+    $bus->setCpu($cpu);
     echo "Starting system via RESET vector...\n";
     $cpu->reset();
 } else {
@@ -101,6 +105,7 @@ if ($isBios) {
     }
 
     $cpu = new CPU($bus, null);
+    $bus->setCpu($cpu);
 
     // Set PC to load address and initialize stack
     $cpu->pc = $loadAddress;
