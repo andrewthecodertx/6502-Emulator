@@ -12,15 +12,19 @@ While Ben builds a physical computer, this project emulates one in software.
 ## Features
 
 ### Core CPU Emulator
+
 * **Complete 6502 CPU implementation** with all standard opcodes and addressing modes
-* **Hybrid execution model** combining JSON-driven and custom handler-based instruction processing
+* **Hybrid execution model** combining JSON-driven and custom handler-based
+instruction processing
 * **Interrupt support** (NMI, IRQ, RESET) with proper edge/level triggering
-* **CPU monitoring** for debugging and profiling with instruction tracing and cycle counting
+* **CPU monitoring** for debugging and profiling with instruction tracing and
+cycle counting
 * **Comprehensive PHPDoc documentation** for excellent IDE support
 
 ### System Implementations
 
 #### BenEater System
+
 * RAM and ROM memory components with flexible loading mechanisms
 * Serial UART (6551 ACIA emulation) for interactive I/O
 * Video memory with 256x240 framebuffer and ANSI terminal rendering
@@ -30,16 +34,20 @@ While Ben builds a physical computer, this project emulates one in software.
 * Memory-mapped peripheral architecture
 
 #### Commodore 64 System (In Development)
+
 * MOS 6510 CPU with banking support
 * VIC-II video chip emulation with sprite support and raster interrupts
 * SID 6581 sound chip with three voices and ADSR envelopes
 * CIA 6526 complex interface adapters (×2) with timers
-* Full C64 memory banking ($A000-$BFFF BASIC ROM, $D000-$DFFF I/O/CharROM, $E000-$FFFF KERNAL ROM)
+* Full C64 memory banking ($A000-$BFFF BASIC ROM, $D000-$DFFF I/O/CharROM,
+$E000-$FFFF KERNAL ROM)
 * Color RAM support
 
 ### Additional Features
+
 * **Ability to run assembled 6502 machine code**
-* **Wozmon monitor program** - classic Apple 1 monitor for memory inspection and code execution
+* **Wozmon monitor program** - classic Apple 1 monitor for memory inspection and
+code execution
 * **Graphics demo** with ANSI terminal rendering
 * **Extensible architecture** - easy to add new systems and peripherals
 
@@ -97,7 +105,7 @@ You can run any assembled program using the `loadbin.php` script located in `src
     memory address to jump to.
 
     ```bash
-    php src/Systems/BenEater/examples/loadbin.php roms/bios.bin
+    php src/Systems/BenEater/examples/loadbin.php bios.bin
     ```
 
 2. **Run Wozmon:**
@@ -105,7 +113,7 @@ You can run any assembled program using the `loadbin.php` script located in `src
     and execute code.
 
     ```bash
-    php src/Systems/BenEater/examples/loadbin.php roms/wozmon_uart.bin
+    php src/Systems/BenEater/examples/loadbin.php wozmon_uart.bin
     ```
 
     Once Wozmon starts, you can interact with it. For example, to view the
@@ -116,7 +124,7 @@ You can run any assembled program using the `loadbin.php` script located in `src
     A demonstration of the ANSI terminal rendering system.
 
     ```bash
-    php src/Systems/BenEater/examples/graphics_demo.php
+    php src/Systems/BenEater/programs/graphics_demo.php
     ```
 
 #### Commodore 64 System
@@ -129,26 +137,33 @@ php src/Systems/C64/examples/basic_system.php
 
 ## Architecture
 
-The emulator uses a modular, reusable architecture that separates the core CPU from system-specific implementations.
+The emulator uses a modular, reusable architecture that separates the core CPU
+from system-specific implementations.
 
 ### Core Components (`src/Core/`)
 
-* **CPU** - The main 6502 processor with all registers, addressing modes, and instruction execution
+* **CPU** - The main 6502 processor with all registers, addressing modes, and
+instruction execution
 * **BusInterface** - Abstraction for system buses to implement memory-mapped I/O
-* **InstructionRegister** - Loads and provides access to opcode definitions from `opcodes.json`
-* **InstructionInterpreter** - Executes instructions using declarative JSON metadata (78% of opcodes)
+* **InstructionRegister** - Loads and provides access to opcode definitions from
+`opcodes.json`
+* **InstructionInterpreter** - Executes instructions using declarative JSON
+metadata (78% of opcodes)
 * **StatusRegister** - Manages the 8 CPU status flags (NV-BDIZC)
 * **CPUMonitor** - Optional debugging and profiling tool
-* **Instructions/** - Custom handlers for complex opcodes (arithmetic with overflow, branches, stack ops)
+* **Instructions/** - Custom handlers for complex opcodes (arithmetic with
+overflow, branches, stack ops)
 
 ### System-Specific Components (`src/Systems/`)
 
-Each system implements `BusInterface` and provides its own memory map and peripherals:
+Each system implements `BusInterface` and provides its own memory map and
+peripherals:
 
 * **BenEater/** - Ben Eater-style computer with UART, video, and I/O peripherals
 * **C64/** - Commodore 64 with VIC-II, SID, CIA chips and memory banking
 
-See `docs/CPU_CORE_ARCHITECTURE.md` for detailed information on building new systems.
+See `docs/CPU_CORE_ARCHITECTURE.md` for detailed information on building new
+systems.
 
 ## Development
 
@@ -172,7 +187,8 @@ PHPStan is used for static analysis. To check the codebase:
 
 * **Comprehensive PHPDoc** - All public methods and classes are fully documented
 * **Type Safety** - Strict typing throughout with detailed array type annotations
-* **Test Coverage** - 56 tests covering CPU operations, addressing modes, and peripherals
+* **Test Coverage** - 56 tests covering CPU operations, addressing modes, and
+peripherals
 * **CLAUDE.md** - Project-specific guidance for AI assistants
 
 ## Project Structure
@@ -206,7 +222,7 @@ src/
     │   │   ├── KeyboardController.php
     │   │   ├── SoundController.php
     │   │   └── Serial.php
-    │   └── examples/           # Example programs
+    │   └── programs/           # Example programs
     │
     └── C64/                    # Commodore 64 system
         ├── Bus/
@@ -221,21 +237,21 @@ src/
 
 ## Future Plans
 
-- **Complete Commodore 64 implementation** with full BASIC and KERNAL support
-- **Apple II system** - Another classic 6502-based computer
-- **NES emulation** - Nintendo Entertainment System support
-- **Cycle-accurate timing** for more precise emulation
-- **Performance optimizations** - JIT compilation, opcode caching
-- **Web interface** - Browser-based emulator with canvas rendering
+* **Complete Commodore 64 implementation** with full BASIC and KERNAL support
+* **Apple II system** - Another classic 6502-based computer
+* **NES emulation** - Nintendo Entertainment System support
+* **Cycle-accurate timing** for more precise emulation
+* **Performance optimizations** - JIT compilation, opcode caching
+* **Web interface** - Browser-based emulator with canvas rendering
 
 ## Contributing
 
 Contributions are welcome! The modular architecture makes it easy to:
 
-- Add new 6502-based systems (see `docs/CPU_CORE_ARCHITECTURE.md`)
-- Implement additional peripherals
-- Improve emulation accuracy
-- Add more test coverage
+* Add new 6502-based systems (see `docs/CPU_CORE_ARCHITECTURE.md`)
+* Implement additional peripherals
+* Improve emulation accuracy
+* Add more test coverage
 
 ## License
 
@@ -243,6 +259,6 @@ This project is open source. See the LICENSE file for details.
 
 ## Acknowledgments
 
-- **Ben Eater** - For the excellent YouTube series that inspired this project
-- **6502.org** - For comprehensive 6502 documentation
-- **cc65 project** - For the assembler and toolchain
+* **Ben Eater** - For the excellent YouTube series that inspired this project
+* **6502.org** - For comprehensive 6502 documentation
+* **cc65 project** - For the assembler and toolchain
