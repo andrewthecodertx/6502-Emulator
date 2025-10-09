@@ -14,6 +14,7 @@ class SystemBus implements BusInterface
     private ROM $rom;
     private ?CPU $cpu = null;
     /** @var array<PeripheralInterface> */ private array $peripherals = [];
+    /** @var array<int, bool> */ private array $lastIrqState = [];
 
     public function __construct(RAM $ram, ROM $rom)
     {
@@ -70,11 +71,18 @@ class SystemBus implements BusInterface
 
     public function tick(): void
     {
-        foreach ($this->peripherals as $peripheral) {
+        foreach ($this->peripherals as $index => $peripheral) {
             $peripheral->tick();
-            if ($this->cpu && $peripheral->hasInterruptRequest()) {
+
+            // Edge-triggered IRQ: only request on LOW->HIGH transition
+            $currentIrqState = $peripheral->hasInterruptRequest();
+            $lastState = $this->lastIrqState[$index] ?? false;
+
+            if ($this->cpu && $currentIrqState && !$lastState) {
                 $this->cpu->requestIRQ();
             }
+
+            $this->lastIrqState[$index] = $currentIrqState;
         }
     }
 

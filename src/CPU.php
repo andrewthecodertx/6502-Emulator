@@ -288,6 +288,7 @@ class CPU
 
         $this->pc = ($irqHigh << 8) | $irqLow;
         $this->cycles += 7;
+        $this->irqPending = false;
     }
 
     private function initializeInstructionHandlers(): void

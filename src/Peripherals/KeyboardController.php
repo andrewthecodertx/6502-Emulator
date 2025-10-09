@@ -10,28 +10,23 @@ class KeyboardController implements PeripheralInterface
 {
     public const KEYBOARD_BASE = 0xC000;
     public const KEYBOARD_END = 0xC00F;
-
-    // Keyboard registers
     public const KEY_DATA = 0xC000;       // Key data register
     public const KEY_STATUS = 0xC001;     // Key status register
     public const KEY_CTRL = 0xC002;       // Control register
-
-    // Status flags
     public const STATUS_READY = 0x01;     // Key available
     public const STATUS_OVERFLOW = 0x80;  // Buffer overflow
-
-    // Control flags
     public const CTRL_ENABLE = 0x01;      // Enable keyboard
     public const CTRL_INTERRUPT = 0x02;   // Enable interrupts
 
-    /** @var array<int> */
-    private array $keyBuffer = [];
+    private const BUFFER_SIZE = 16;
+
+    /** @var array<int> */ private array $keyBuffer = [];
 
     private int $keyData = 0;
     private int $keyStatus = 0;
     private int $keyControl = self::CTRL_ENABLE;
 
-    private const BUFFER_SIZE = 16;
+    private bool $irq_pending = false;
 
     public function __construct()
     {
@@ -77,8 +72,6 @@ class KeyboardController implements PeripheralInterface
             return;
         }
 
-        // In a real implementation, this would check for input
-        // For now, we'll simulate checking for buffered input
         $this->updateStatus();
     }
 
@@ -90,9 +83,6 @@ class KeyboardController implements PeripheralInterface
         $this->keyControl = self::CTRL_ENABLE;
     }
 
-    /**
-     * Add a key to the input buffer (for simulation/testing)
-     */
     public function addKey(int $keyCode): void
     {
         if (!($this->keyControl & self::CTRL_ENABLE)) {
@@ -108,9 +98,6 @@ class KeyboardController implements PeripheralInterface
         $this->updateStatus();
     }
 
-    /**
-     * Add a string of characters to the buffer
-     */
     public function addString(string $text): void
     {
         foreach (str_split($text) as $char) {
@@ -118,16 +105,12 @@ class KeyboardController implements PeripheralInterface
         }
     }
 
-    /**
-     * Read from stdin in non-blocking mode (CLI only)
-     */
     public function checkStdin(): void
     {
         if (php_sapi_name() !== 'cli') {
             return;
         }
 
-        // Check if stdin has data available (non-blocking)
         $read = [STDIN];
         $write = [];
         $except = [];
@@ -143,7 +126,7 @@ class KeyboardController implements PeripheralInterface
     private function readKeyData(): int
     {
         if (empty($this->keyBuffer)) {
-            return $this->keyData; // Return last key if buffer empty
+            return $this->keyData;
         }
 
         $this->keyData = array_shift($this->keyBuffer);
@@ -161,34 +144,22 @@ class KeyboardController implements PeripheralInterface
         }
     }
 
-    /**
-     * Check if a key is available
-     */
     public function hasKey(): bool
     {
         return ($this->keyStatus & self::STATUS_READY) !== 0;
     }
 
-    /**
-     * Get the current buffer size
-     */
     public function getBufferSize(): int
     {
         return count($this->keyBuffer);
     }
 
-    /**
-     * Clear the input buffer
-     */
     public function clearBuffer(): void
     {
         $this->keyBuffer = [];
         $this->keyStatus &= ~(self::STATUS_READY | self::STATUS_OVERFLOW);
     }
 
-    /**
-     * Enable/disable keyboard
-     */
     public function setEnabled(bool $enabled): void
     {
         if ($enabled) {
@@ -199,9 +170,6 @@ class KeyboardController implements PeripheralInterface
         }
     }
 
-    /**
-     * Get keyboard status information
-     */
     /** @return array<string, mixed> */
     public function getStatus(): array
     {
@@ -212,5 +180,10 @@ class KeyboardController implements PeripheralInterface
           'overflow' => ($this->keyStatus & self::STATUS_OVERFLOW) !== 0,
           'last_key' => $this->keyData,
         ];
+    }
+
+    public function hasInterruptRequest(): bool
+    {
+        return $this->irq_pending;
     }
 }

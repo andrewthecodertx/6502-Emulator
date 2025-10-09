@@ -10,12 +10,13 @@ class Serial implements PeripheralInterface
 {
     private const DATA_REGISTER = 0xFE00;
     private const STATUS_REGISTER = 0xFE01;
-
-    private const TRANSMITTER_READY = 0b10000000;  // Bit 7 - standard for 6551 ACIA
+    private const TRANSMITTER_READY = 0b10000000;
     private const RECEIVER_FULL = 0b00000001;
 
     private string $outputBuffer = '';
     private string $inputBuffer = '';
+
+    private bool $irq_pending = false;
 
     public function handlesAddress(int $address): bool
     {
@@ -70,5 +71,10 @@ class Serial implements PeripheralInterface
     public function setInput(string $input): void
     {
         $this->inputBuffer .= $input;
+    }
+
+    public function hasInterruptRequest(): bool
+    {
+        return $this->irq_pending;
     }
 }

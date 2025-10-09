@@ -33,6 +33,8 @@ class SoundController implements PeripheralInterface
 
     /** @var array<int, array<string, int>> */ private array $channels = [];
 
+    private bool $irq_pending = false;
+
     public function __construct()
     {
         $this->reset();
@@ -158,5 +160,10 @@ class SoundController implements PeripheralInterface
         for ($i = 0; $i < 4; $i++) {
             $this->channels[$i]['control'] &= ~self::CTRL_ENABLE;
         }
+    }
+
+    public function hasInterruptRequest(): bool
+    {
+        return $this->irq_pending;
     }
 }
