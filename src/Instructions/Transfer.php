@@ -10,8 +10,9 @@ use Emulator\StatusRegister;
 
 class Transfer
 {
-    public function __construct(private CPU $cpu)
-    {
+    public function __construct(
+        private CPU $cpu
+    ) {
     }
 
     public function tax(Opcode $opcode): int

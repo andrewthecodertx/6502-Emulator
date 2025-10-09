@@ -10,8 +10,9 @@ use Emulator\StatusRegister;
 
 class Arithmetic
 {
-    public function __construct(private CPU $cpu)
-    {
+    public function __construct(
+        private CPU $cpu
+    ) {
     }
 
     public function adc(Opcode $opcode): int
@@ -99,3 +100,4 @@ class Arithmetic
         return $opcode->getCycles();
     }
 }
+

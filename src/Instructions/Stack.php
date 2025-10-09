@@ -10,8 +10,9 @@ use Emulator\StatusRegister;
 
 class Stack
 {
-    public function __construct(private CPU $cpu)
-    {
+    public function __construct(
+        private CPU $cpu
+    ) {
     }
 
     public function pha(Opcode $opcode): int

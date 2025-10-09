@@ -10,8 +10,9 @@ use Emulator\StatusRegister;
 
 class IncDec
 {
-    public function __construct(private CPU $cpu)
-    {
+    public function __construct(
+        private CPU $cpu
+    ) {
     }
 
     public function inc(Opcode $opcode): int

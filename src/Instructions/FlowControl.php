@@ -10,8 +10,9 @@ use Emulator\StatusRegister;
 
 class FlowControl
 {
-    public function __construct(private CPU $cpu)
-    {
+    public function __construct(
+        private CPU $cpu
+    ) {
     }
 
     public function beq(Opcode $opcode): int

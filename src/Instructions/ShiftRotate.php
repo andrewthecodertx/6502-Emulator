@@ -10,8 +10,9 @@ use Emulator\StatusRegister;
 
 class ShiftRotate
 {
-    public function __construct(private CPU $cpu)
-    {
+    public function __construct(
+        private CPU $cpu
+    ) {
     }
 
     public function asl(Opcode $opcode): int
@@ -138,4 +139,3 @@ class ShiftRotate
         return $opcode->getCycles();
     }
 }
-

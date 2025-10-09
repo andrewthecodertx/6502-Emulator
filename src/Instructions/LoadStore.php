@@ -10,8 +10,9 @@ use Emulator\StatusRegister;
 
 class LoadStore
 {
-    public function __construct(private CPU $cpu)
-    {
+    public function __construct(
+        private CPU $cpu
+    ) {
     }
 
     public function lda(Opcode $opcode): int
