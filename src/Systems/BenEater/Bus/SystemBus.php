@@ -14,8 +14,10 @@ class SystemBus implements BusInterface
     private RAM $ram;
     private ROM $rom;
     private ?CPU $cpu = null;
-    /** @var array<PeripheralInterface> */ private array $peripherals = [];
-    /** @var array<int, bool> */ private array $lastIrqState = [];
+    /** @var array<int, PeripheralInterface> */
+    private array $peripherals = [];
+    /** @var array<int, bool> */
+    private array $lastIrqState = [];
 
     public function __construct(RAM $ram, ROM $rom)
     {

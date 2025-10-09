@@ -6,7 +6,7 @@ namespace Emulator\Systems\BenEater;
 
 class ANSIRenderer
 {
-    /** @var array<int,int> Maps 8-bit palette indices to ANSI 256-color codes */
+    /** @var array<int, int> Maps 8-bit palette indices to ANSI 256-color codes */
     private array $paletteMap = [];
     /** @var bool Whether to use Unicode half-blocks for double vertical resolution */
     private bool $useHalfBlocks = true;
@@ -41,7 +41,7 @@ class ANSIRenderer
         }
     }
 
-    /** @param array<int,int> $palette Array mapping palette index to ANSI color code */
+    /** @param array<int, int> $palette Array mapping palette index to ANSI color code */
     public function setPalette(array $palette): void
     {
         $this->paletteMap = $palette;
@@ -67,7 +67,7 @@ class ANSIRenderer
         return "\033[0m";
     }
 
-    /** @param array<int> $framebuffer Array of palette indices (must be 61440 bytes for 256x240 */
+    /** @param array<int, int> $framebuffer Array of palette indices (must be 61440 bytes for 256x240) */
     public function render(array $framebuffer): string
     {
         if (count($framebuffer) !== VideoMemory::FRAMEBUFFER_SIZE) {
@@ -89,7 +89,7 @@ class ANSIRenderer
         return $output;
     }
 
-    /** @param array<int> $framebuffer */
+    /** @param array<int, int> $framebuffer */
     private function renderHalfBlocks(array $framebuffer): string
     {
         $output = '';
@@ -116,7 +116,7 @@ class ANSIRenderer
         return $output;
     }
 
-    /** @param array<int> $framebuffer */
+    /** @param array<int, int> $framebuffer */
     private function renderFullBlocks(array $framebuffer): string
     {
         $output = '';
@@ -136,7 +136,7 @@ class ANSIRenderer
         return $output;
     }
 
-    /** @param array<int> $framebuffer */
+    /** @param array<int, int> $framebuffer */
     public function display(array $framebuffer): void
     {
         echo $this->render($framebuffer);
@@ -147,7 +147,7 @@ class ANSIRenderer
         echo self::CLEAR_SCREEN;
     }
 
-    /** @return array<int> */
+    /** @return array<int, int> */
     public static function createTestPattern(): array
     {
         $buffer = [];
@@ -163,7 +163,7 @@ class ANSIRenderer
         return $buffer;
     }
 
-    /** @return array<int> */
+    /** @return array<int, int> */
     public static function createColorBars(): array
     {
         $buffer = [];

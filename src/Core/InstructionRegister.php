@@ -6,7 +6,8 @@ namespace Emulator\Core;
 
 class InstructionRegister
 {
-    /** @var array<Opcode> */ private array $opcodes = [];
+    /** @var array<string, Opcode> */
+    private array $opcodes = [];
 
     public function __construct()
     {
@@ -51,7 +52,7 @@ class InstructionRegister
         return $this->opcodes[$opcode] ?? null;
     }
 
-    /** @return array<Opcode> */
+    /** @return array<string, Opcode> */
     public function findOpcodesByMnemonic(string $mnemonic): array
     {
         return array_filter($this->opcodes, fn (Opcode $opcode) => $opcode->getMnemonic() === $mnemonic);

@@ -25,7 +25,8 @@ class CPU
 
     public bool $halted = false;
 
-    /** @var array<string> */ private array $pcTrace = [];
+    /** @var array<int, string> */
+    private array $pcTrace = [];
 
     private bool $nmiPending = false;
     private bool $irqPending = false;
@@ -34,7 +35,8 @@ class CPU
     private bool $running = true;
     private bool $autoTickBus = true;
 
-    /** @var array<string, callable> */ private array $instructionHandlers = [];
+    /** @var array<string, callable(Opcode): int> */
+    private array $instructionHandlers = [];
 
     private readonly InstructionInterpreter $interpreter;
     private readonly LoadStore $loadStoreHandler;

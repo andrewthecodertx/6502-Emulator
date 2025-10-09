@@ -18,11 +18,12 @@ class VideoMemory implements PeripheralInterface
     /** @var bool Tracks if display has been modified */ private bool $dirty = false;
     /** @var int Frame counter for vsync */ private int $frameCount = 0;
 
+    /** @var array<int, int> */
+    private array $framebuffer = [];
+
     public function __construct(
         private int $startAddress = self::DEFAULT_START,
-        private int $endAddress = self::DEFAULT_END,
-        /** @var array<int> $framebuffer */
-        private array $framebuffer = []
+        private int $endAddress = self::DEFAULT_END
     ) {
         $this->framebuffer = array_fill(0, $this->endAddress - $this->startAddress + 1, 0);
     }
@@ -69,7 +70,7 @@ class VideoMemory implements PeripheralInterface
         $this->frameCount = 0;
     }
 
-    /** @return array<int> Array of palette indices */
+    /** @return array<int, int> Array of palette indices */
     public function getFramebuffer(): array
     {
         return array_slice($this->framebuffer, 0, self::FRAMEBUFFER_SIZE);
@@ -97,7 +98,7 @@ class VideoMemory implements PeripheralInterface
         return $this->frameCount;
     }
 
-    /** @return array<string,int|string> */
+    /** @return array{width: int, height: int, framebuffer_size: int, start_address: string, end_address: string, total_size: int} */
     public function getConfig(): array
     {
         return [
