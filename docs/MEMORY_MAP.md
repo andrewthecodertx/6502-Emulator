@@ -17,6 +17,8 @@ and memory-mapped I/O peripherals.
      │ 0x0200 - 0x7FFF │ General Purpose RAM (31.5KB)                     │
      │ 0x8000 - 0xFFFF │ ROM Space (32KB)                                 │
      │    0xFE00-0xFE03│ ├─ W65C51N UART (memory-mapped in ROM space)     │
+     │    0xFE40-0xFE4F│ ├─ W65C22 VIA (memory-mapped in ROM space)       │
+     │    0xFFFA-0xFFFB│ ├─ NMI Vector                                    │
      │    0xFFFC-0xFFFD│ ├─ Reset Vector                                  │
      │    0xFFFE-0xFFFF│ └─ IRQ/BRK Vector                                │
      └─────────────────┴──────────────────────────────────────────────────┘
@@ -60,6 +62,7 @@ which intercepts peripheral addresses before they reach ROM.
 #### Memory-Mapped Peripherals (Various locations in ROM space)
 
 - **UART**: 0xFE00-0xFE03 (W65C51N)
+- **VIA**: 0xFE40-0xFE4F (W65C22)
 - **Other peripherals**: Can be mapped anywhere in 0x8000-0xFFFF range
 - **Note**: SystemBus intercepts peripheral accesses before ROM
 
@@ -98,7 +101,71 @@ vector (0xFFFE-0xFFFF)
 - Bit 6: Data Set Ready (DSR)
 - Bit 7: Interrupt Request (IRQ)
 
+#### W65C22 VIA - Versatile Interface Adapter (0xFE40 - 0xFE4F)
+
+```
+┌─────────┬─────────────┬──────────────────────────────────────────┐
+│ Address │ Register    │ Description                              │
+├─────────┼─────────────┼──────────────────────────────────────────┤
+│ 0xFE40  │ ORB/IRB     │ Output/Input Register B (R/W)            │
+│ 0xFE41  │ ORA/IRA     │ Output/Input Register A (R/W)            │
+│ 0xFE42  │ DDRB        │ Data Direction Register B (R/W)          │
+│ 0xFE43  │ DDRA        │ Data Direction Register A (R/W)          │
+│ 0xFE44  │ T1C-L       │ Timer 1 Counter Low Byte (R/W)           │
+│ 0xFE45  │ T1C-H       │ Timer 1 Counter High Byte (R/W)          │
+│ 0xFE46  │ T1L-L       │ Timer 1 Latch Low Byte (R/W)             │
+│ 0xFE47  │ T1L-H       │ Timer 1 Latch High Byte (R/W)            │
+│ 0xFE48  │ T2C-L       │ Timer 2 Counter Low Byte (R/W)           │
+│ 0xFE49  │ T2C-H       │ Timer 2 Counter High Byte (R/W)          │
+│ 0xFE4A  │ SR          │ Shift Register (R/W)                     │
+│ 0xFE4B  │ ACR         │ Auxiliary Control Register (R/W)         │
+│ 0xFE4C  │ PCR         │ Peripheral Control Register (R/W)        │
+│ 0xFE4D  │ IFR         │ Interrupt Flag Register (R/W)            │
+│ 0xFE4E  │ IER         │ Interrupt Enable Register (R/W)          │
+│ 0xFE4F  │ ORA-NH      │ Output Register A (No Handshake) (R/W)   │
+└─────────┴─────────────┴──────────────────────────────────────────┘
+```
+
+**VIA Features**:
+
+- Two 8-bit bidirectional I/O ports (Port A and Port B)
+- Two 16-bit programmable timers/counters
+- Shift register for serial data transfer
+- Interrupt capability with individual enable/flag bits
+- Handshaking control for data transfers
+- Timer modes: One-shot, free-running, pulse counting
+
+**Interrupt Flag Register (IFR) Bits**:
+
+- Bit 0: CA2 Active Edge
+- Bit 1: CA1 Active Edge
+- Bit 2: Shift Register
+- Bit 3: CB2 Active Edge
+- Bit 4: CB1 Active Edge
+- Bit 5: Timer 2
+- Bit 6: Timer 1
+- Bit 7: IRQ (Any interrupt)
+
 ### Available Peripherals (Not Currently Connected)
+
+#### Video Memory (0x0400 - 0xF3FF)
+
+```
+┌─────────────────┬──────────────────────────────────────────────────┐
+│   Address Range │ Description                                      │
+├─────────────────┼──────────────────────────────────────────────────┤
+│ 0x0400 - 0xF3FF │ Framebuffer (61,440 bytes / 256×240 pixels)      │
+└─────────────────┴──────────────────────────────────────────────────┘
+```
+
+**Video Memory Features**:
+
+- Resolution: 256×240 pixels
+- Format: 8-bit indexed color (1 byte per pixel)
+- Total size: 61,440 bytes
+- Linear framebuffer layout
+- **Note**: When enabled, shadows ROM space 0x8000-0xF3FF
+- **Status**: Available but not currently connected in loadbin.php
 
 #### Keyboard Controller (0xC000 - 0xC00F)
 
@@ -184,9 +251,9 @@ space while maintaining clean separation of concerns.
 
 ## Current System Configuration
 
-### Terminal Demo (`terminal.php`)
+### Program Loader (`loadbin.php`)
 
-The main terminal application currently uses:
+The main program loader currently configures:
 
 - **RAM**: 0x0000 - 0x7FFF (32KB)
   - Zero page: 0x0000-0x00FF
@@ -196,18 +263,37 @@ The main terminal application currently uses:
   - Program code and data
   - System vectors at 0xFFFA-0xFFFF
 - **UART**: W65C51N at 0xFE00-0xFE03 (memory-mapped via SystemBus)
-- **SystemBus**: Routes memory access between RAM, ROM, and peripherals
+- **VIA**: W65C22 at 0xFE40-0xFE4F (memory-mapped via SystemBus)
+- **SystemBus**: Routes memory access between RAM, ROM, and peripherals with edge-triggered interrupt support
 
 ## Expansion Possibilities
 
 The current architecture supports easy addition of:
 
+- Video display (VideoMemory class available at 0x0400-0xF3FF)
+- Keyboard input (KeyboardController class available at 0xC000-0xC00F)
+- Sound output (SoundController class available at 0xC400-0xC40F)
 - Graphics controllers in 0xC000-0xC3FF range
 - Additional UART devices
+- Additional VIA chips for more I/O
 - Timer/counter peripherals
 - GPIO controllers
-- Sound synthesizers
 
 All peripherals implement `PeripheralInterface` and are managed by the
-`SystemBus` for automatic memory mapping and bus arbitration.
+`SystemBus` for automatic memory mapping, bus arbitration, and edge-triggered
+interrupt handling.
+
+## Interrupt System
+
+The emulator implements a proper interrupt system with:
+
+- **Edge-Triggered IRQs**: SystemBus only requests CPU interrupt on LOW→HIGH
+  transitions, preventing interrupt storms
+- **Peripheral Integration**: All peripherals can signal interrupts via
+  `hasInterruptRequest()` method
+- **CPU Interrupt Handling**: Proper IRQ/NMI handling with vector support
+- **Interrupt Vectors**:
+  - NMI: 0xFFFA-0xFFFB (Non-maskable, edge-triggered)
+  - RESET: 0xFFFC-0xFFFD (System initialization)
+  - IRQ/BRK: 0xFFFE-0xFFFF (Maskable, edge-triggered via I flag)
 
