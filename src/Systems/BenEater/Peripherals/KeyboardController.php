@@ -6,6 +6,12 @@ namespace Emulator\Systems\BenEater\Peripherals;
 
 use Emulator\Systems\BenEater\Bus\PeripheralInterface;
 
+/**
+ * PS/2-style keyboard input controller with 16-byte FIFO buffer.
+ *
+ * Provides memory-mapped keyboard input with data, status, and control
+ * registers. Includes overflow detection and optional interrupt generation.
+ */
 class KeyboardController implements PeripheralInterface
 {
     public const KEYBOARD_BASE = 0xC000;

@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace Emulator\Systems\BenEater;
 
+/**
+ * Terminal renderer using ANSI escape codes for framebuffer display.
+ *
+ * Converts framebuffer data to ANSI color codes for terminal output. Supports
+ * Unicode half-block characters for double vertical resolution and configurable
+ * scaling. Uses ANSI 256-color mode with customizable palette mapping.
+ */
 class ANSIRenderer
 {
     /** @var array<int, int> Maps 8-bit palette indices to ANSI 256-color codes */
@@ -21,6 +28,12 @@ class ANSIRenderer
     /** @var string Unicode half-block upper character */
     private const HALF_BLOCK = '▀';
 
+    /**
+     * Creates a new ANSI renderer.
+     *
+     * @param bool $useHalfBlocks Use Unicode half-blocks for better vertical resolution
+     * @param int $scale Scale factor (1=full size, 2=half size, etc.)
+     */
     public function __construct(
         bool $useHalfBlocks = true,
         int $scale = 2
@@ -41,7 +54,11 @@ class ANSIRenderer
         }
     }
 
-    /** @param array<int, int> $palette Array mapping palette index to ANSI color code */
+    /**
+     * Sets a custom palette mapping.
+     *
+     * @param array<int, int> $palette Array mapping palette index to ANSI color code
+     */
     public function setPalette(array $palette): void
     {
         $this->paletteMap = $palette;
@@ -67,7 +84,13 @@ class ANSIRenderer
         return "\033[0m";
     }
 
-    /** @param array<int, int> $framebuffer Array of palette indices (must be 61440 bytes for 256x240) */
+    /**
+     * Renders framebuffer to ANSI string for terminal output.
+     *
+     * @param array<int, int> $framebuffer Array of palette indices (must be 61440 bytes)
+     * @return string ANSI-formatted output string
+     * @throws \InvalidArgumentException If framebuffer size is incorrect
+     */
     public function render(array $framebuffer): string
     {
         if (count($framebuffer) !== VideoMemory::FRAMEBUFFER_SIZE) {
@@ -136,18 +159,28 @@ class ANSIRenderer
         return $output;
     }
 
-    /** @param array<int, int> $framebuffer */
+    /**
+     * Renders and immediately outputs framebuffer to terminal.
+     *
+     * @param array<int, int> $framebuffer Array of palette indices
+     * @throws \InvalidArgumentException If framebuffer size is incorrect
+     */
     public function display(array $framebuffer): void
     {
         echo $this->render($framebuffer);
     }
 
+    /** Clears the terminal screen. */
     public function clear(): void
     {
         echo self::CLEAR_SCREEN;
     }
 
-    /** @return array<int, int> */
+    /**
+     * Creates a test pattern framebuffer with horizontal gradient.
+     *
+     * @return array<int, int> Framebuffer with test pattern
+     */
     public static function createTestPattern(): array
     {
         $buffer = [];
@@ -163,7 +196,11 @@ class ANSIRenderer
         return $buffer;
     }
 
-    /** @return array<int, int> */
+    /**
+     * Creates a color bar test pattern framebuffer.
+     *
+     * @return array<int, int> Framebuffer with vertical color bars
+     */
     public static function createColorBars(): array
     {
         $buffer = [];

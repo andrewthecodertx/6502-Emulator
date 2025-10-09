@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Emulator\Systems\BenEater;
 
+/**
+ * Simple console I/O utility for character-based terminal interaction.
+ *
+ * Provides character output with special handling for control characters
+ * (newline, carriage return, backspace, bell) and non-blocking input buffering.
+ */
 class ConsoleIO
 {
     public const CONSOLE_OUTPUT = 0xD000;
@@ -13,6 +19,7 @@ class ConsoleIO
     /** @var array<string> */ private array $inputBuffer = [];
     private bool $inputReady = false;
 
+    /** Initializes console I/O with non-blocking input (CLI mode only). */
     public function __construct()
     {
         if (php_sapi_name() === 'cli') {
@@ -20,6 +27,13 @@ class ConsoleIO
         }
     }
 
+    /**
+     * Writes a character to console output.
+     *
+     * Special characters: LF, CR, BS, BEL. Printable: 0x20-0x7E.
+     *
+     * @param int $character The character code to write (0-127)
+     */
     public function writeCharacter(int $character): void
     {
         $char = chr($character & 0x7F);
@@ -51,12 +65,22 @@ class ConsoleIO
         flush();
     }
 
+    /**
+     * Gets input status (bit 7 set if data ready).
+     *
+     * @return int 0x80 if input ready, 0x00 otherwise
+     */
     public function getInputStatus(): int
     {
         $this->checkForInput();
         return $this->inputReady ? 0x80 : 0x00;
     }
 
+    /**
+     * Reads next character from input buffer.
+     *
+     * @return int The character code (0-255) or 0x00 if no input
+     */
     public function readCharacter(): int
     {
         $this->checkForInput();
@@ -70,6 +94,7 @@ class ConsoleIO
         return 0x00;
     }
 
+    /** Polls STDIN for new input and updates buffer. */
     private function checkForInput(): void
     {
         if (php_sapi_name() === 'cli') {
@@ -84,6 +109,11 @@ class ConsoleIO
         }
     }
 
+    /**
+     * Checks if input is available.
+     *
+     * @return bool True if input is ready
+     */
     public function hasInput(): bool
     {
         $this->checkForInput();

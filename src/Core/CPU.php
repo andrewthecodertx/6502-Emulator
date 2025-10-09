@@ -14,6 +14,13 @@ use Emulator\Core\Instructions\FlowControl;
 use Emulator\Core\Instructions\Stack;
 use Emulator\Core\Instructions\Flags;
 
+/**
+ * 6502 CPU Emulator
+ *
+ * Implements a fully functional 6502 microprocessor with support for all standard
+ * opcodes, addressing modes, interrupts (NMI, IRQ, RESET), and a hybrid execution
+ * model combining JSON-driven and custom handler-based instruction processing.
+ */
 class CPU
 {
     public int $pc = 0;
@@ -49,6 +56,14 @@ class CPU
     private readonly Stack $stackHandler;
     private readonly Flags $flagsHandler;
 
+    /**
+     * Initializes the CPU with a bus interface and optional monitoring
+     *
+     * @param BusInterface $bus The system bus for memory access
+     * @param CPUMonitor|null $monitor Optional monitor for debugging and profiling
+     * @param InstructionRegister $instructionRegister The opcode registry
+     * @param StatusRegister $status The CPU status flags register
+     */
     public function __construct(
         private readonly BusInterface $bus,
         private ?CPUMonitor $monitor = null,
@@ -69,6 +84,9 @@ class CPU
         $this->initializeInstructionHandlers();
     }
 
+    /**
+     * Decrements the cycle counter and logs to monitor if enabled
+     */
     public function clock(): void
     {
         $this->cycles--;
@@ -78,6 +96,11 @@ class CPU
         }
     }
 
+    /**
+     * Runs the CPU continuously until stopped
+     *
+     * Executes instructions in a loop until stop() is called.
+     */
     public function run(): void
     {
         while ($this->running) {
@@ -85,11 +108,26 @@ class CPU
         }
     }
 
+    /**
+     * Stops the CPU execution loop
+     *
+     * Causes run() to exit after the current instruction completes.
+     */
     public function stop(): void
     {
         $this->running = false;
     }
 
+    /**
+     * Executes a single CPU cycle
+     *
+     * Handles interrupts (RESET, NMI, IRQ), fetches and executes instructions,
+     * and manages the cycle counter. Uses either JSON-driven or handler-based
+     * execution depending on the opcode.
+     *
+     * @throws \InvalidArgumentException If an unknown opcode is encountered
+     * @throws \RuntimeException If an instruction handler is not implemented
+     */
     public function step(): void
     {
         if ($this->halted) {
@@ -173,6 +211,12 @@ class CPU
         }
     }
 
+    /**
+     * Executes a complete instruction including all cycles
+     *
+     * Calls step() repeatedly until the instruction completes and all cycles
+     * are consumed. Useful for debugging or single-stepping through instructions.
+     */
     public function executeInstruction(): void
     {
         $startingPC = $this->pc;
@@ -181,26 +225,51 @@ class CPU
         } while (!$this->halted && ($this->cycles > 0 || $this->pc == $startingPC));
     }
 
+    /**
+     * Halts CPU execution
+     *
+     * Sets the halted flag, causing the CPU to stop executing instructions
+     * while continuing to decrement the cycle counter.
+     */
     public function halt(): void
     {
         $this->halted = true;
     }
 
+    /**
+     * Resumes CPU execution after halt
+     */
     public function resume(): void
     {
         $this->halted = false;
     }
 
+    /**
+     * Checks if the CPU is currently halted
+     *
+     * @return bool True if halted, false otherwise
+     */
     public function isHalted(): bool
     {
         return $this->halted;
     }
 
+    /**
+     * Enables or disables automatic bus ticking during step()
+     *
+     * @param bool $autoTick If true, bus->tick() is called each cycle
+     */
     public function setAutoTickBus(bool $autoTick): void
     {
         $this->autoTickBus = $autoTick;
     }
 
+    /**
+     * Resets the CPU via the RESET interrupt
+     *
+     * Requests a RESET interrupt and executes it immediately if the CPU is halted.
+     * Otherwise, RESET will be processed at the next instruction boundary.
+     */
     public function reset(): void
     {
         $this->requestReset();
@@ -367,64 +436,133 @@ class CPU
         ];
     }
 
+    /**
+     * Gets the current value of the accumulator register
+     *
+     * @return int Accumulator value (0x00-0xFF)
+     */
     public function getAccumulator(): int
     {
         return $this->accumulator;
     }
 
+    /**
+     * Sets the accumulator register value
+     *
+     * @param int $value Value to set (automatically masked to 8 bits)
+     */
     public function setAccumulator(int $value): void
     {
         $this->accumulator = $value & 0xFF;
     }
 
+    /**
+     * Gets the current value of the X index register
+     *
+     * @return int X register value (0x00-0xFF)
+     */
     public function getRegisterX(): int
     {
         return $this->registerX;
     }
 
+    /**
+     * Sets the X index register value
+     *
+     * @param int $value Value to set (automatically masked to 8 bits)
+     */
     public function setRegisterX(int $value): void
     {
         $this->registerX = $value & 0xFF;
     }
 
+    /**
+     * Gets the current value of the Y index register
+     *
+     * @return int Y register value (0x00-0xFF)
+     */
     public function getRegisterY(): int
     {
         return $this->registerY;
     }
 
+    /**
+     * Sets the Y index register value
+     *
+     * @param int $value Value to set (automatically masked to 8 bits)
+     */
     public function setRegisterY(int $value): void
     {
         $this->registerY = $value & 0xFF;
     }
 
+    /**
+     * Gets the current stack pointer value
+     *
+     * @return int Stack pointer (0x00-0xFF, points to next free location)
+     */
     public function getStackPointer(): int
     {
         return $this->sp;
     }
 
+    /**
+     * Sets the stack pointer value
+     *
+     * @param int $value Value to set (automatically masked to 8 bits)
+     */
     public function setStackPointer(int $value): void
     {
         $this->sp = $value & 0xFF;
     }
 
+    /**
+     * Pushes a byte onto the stack
+     *
+     * Writes the value to the current stack location (0x0100 + SP) and
+     * decrements the stack pointer. Stack grows downward from 0x01FF.
+     *
+     * @param int $value Byte to push (automatically masked to 8 bits)
+     */
     public function pushByte(int $value): void
     {
         $this->bus->write(0x0100 + $this->sp, $value & 0xFF);
         $this->sp = ($this->sp - 1) & 0xFF;
     }
 
+    /**
+     * Pulls a byte from the stack
+     *
+     * Increments the stack pointer and reads from the stack location.
+     *
+     * @return int Byte value pulled from stack (0x00-0xFF)
+     */
     public function pullByte(): int
     {
         $this->sp = ($this->sp + 1) & 0xFF;
         return $this->bus->read(0x0100 + $this->sp);
     }
 
+    /**
+     * Pushes a 16-bit word onto the stack
+     *
+     * Pushes high byte first, then low byte (standard 6502 convention).
+     *
+     * @param int $value 16-bit value to push
+     */
     public function pushWord(int $value): void
     {
         $this->pushByte(($value >> 8) & 0xFF);
         $this->pushByte($value & 0xFF);
     }
 
+    /**
+     * Pulls a 16-bit word from the stack
+     *
+     * Pulls low byte first, then high byte (standard 6502 convention).
+     *
+     * @return int 16-bit value pulled from stack
+     */
     public function pullWord(): int
     {
         $low = $this->pullByte();
@@ -432,6 +570,17 @@ class CPU
         return ($high << 8) | $low;
     }
 
+    /**
+     * Calculates effective address for a given addressing mode
+     *
+     * Reads necessary bytes from memory after PC and advances PC accordingly.
+     * Supports all standard 6502 addressing modes including zero page, absolute,
+     * indexed, indirect, and relative modes.
+     *
+     * @param string $addressingMode The addressing mode name
+     * @return int The effective address calculated for this mode
+     * @throws \InvalidArgumentException If addressing mode is not recognized
+     */
     public function getAddress(string $addressingMode): int
     {
         return match ($addressingMode) {
@@ -566,6 +715,11 @@ class CPU
         return 0;
     }
 
+    /**
+     * Returns a formatted string of CPU register states
+     *
+     * @return string Formatted string showing PC, SP, A, X, Y registers in hex
+     */
     public function getRegistersState(): string
     {
         return sprintf(
@@ -578,6 +732,11 @@ class CPU
         );
     }
 
+    /**
+     * Returns a formatted string of CPU status flags
+     *
+     * @return string Formatted string showing all status flags (NVUBDIZC)
+     */
     public function getFlagsState(): string
     {
         return sprintf(
@@ -593,16 +752,32 @@ class CPU
         );
     }
 
+    /**
+     * Gets the system bus interface
+     *
+     * @return BusInterface The bus for memory and I/O access
+     */
     public function getBus(): BusInterface
     {
         return $this->bus;
     }
 
+    /**
+     * Gets the instruction register containing opcode definitions
+     *
+     * @return InstructionRegister The opcode registry
+     */
     public function getInstructionRegister(): InstructionRegister
     {
         return $this->instructionRegister;
     }
 
+    /**
+     * Requests a Non-Maskable Interrupt (NMI)
+     *
+     * NMI is edge-triggered and cannot be masked by the I flag. Will execute
+     * at the next instruction boundary. Only triggers on falling edge.
+     */
     public function requestNMI(): void
     {
         if ($this->nmiLastState === true) {
@@ -611,36 +786,70 @@ class CPU
         $this->nmiLastState = false;
     }
 
+    /**
+     * Releases the NMI line to high state
+     *
+     * Prepares for the next falling edge detection.
+     */
     public function releaseNMI(): void
     {
         $this->nmiLastState = true;
     }
 
+    /**
+     * Requests an Interrupt Request (IRQ)
+     *
+     * IRQ is level-triggered and can be masked by the I flag. Will execute
+     * at the next instruction boundary if interrupts are enabled.
+     */
     public function requestIRQ(): void
     {
         $this->irqPending = true;
     }
 
+    /**
+     * Releases the IRQ line, clearing the pending interrupt
+     */
     public function releaseIRQ(): void
     {
         $this->irqPending = false;
     }
 
+    /**
+     * Requests a RESET interrupt
+     *
+     * RESET has highest priority and will execute at the next instruction boundary.
+     */
     public function requestReset(): void
     {
         $this->resetPending = true;
     }
 
+    /**
+     * Sets or clears the CPU monitor for debugging
+     *
+     * @param CPUMonitor|null $monitor Monitor instance or null to disable
+     */
     public function setMonitor(?CPUMonitor $monitor): void
     {
         $this->monitor = $monitor;
     }
 
+    /**
+     * Gets the current CPU monitor instance
+     *
+     * @return CPUMonitor|null Monitor instance or null if not monitored
+     */
     public function getMonitor(): ?CPUMonitor
     {
         return $this->monitor;
     }
 
+    /**
+     * Checks if the CPU is currently being monitored
+     *
+     * @return bool True if a monitor is attached, false otherwise
+     */
     public function isMonitored(): bool
     {
         return $this->monitor !== null;

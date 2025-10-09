@@ -6,6 +6,12 @@ namespace Emulator\Systems\BenEater\Peripherals;
 
 use Emulator\Systems\BenEater\Bus\PeripheralInterface;
 
+/**
+ * Simple serial communication peripheral with data and status registers.
+ *
+ * Provides basic serial I/O with transmitter ready and receiver full flags.
+ * Simpler alternative to UART for testing and basic communication.
+ */
 class Serial implements PeripheralInterface
 {
     private const DATA_REGISTER = 0xFE00;

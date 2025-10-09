@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Emulator\Systems\BenEater;
 
+/**
+ * Read-only memory with multiple loading mechanisms.
+ *
+ * Supports loading ROM data from arrays, binary files, or directories with
+ * metadata. ROM space is 32KB ($8000-$FFFF). Uninitialized addresses return 0.
+ */
 class ROM
 {
     public const ROM_START = 0x8000;
@@ -12,6 +18,12 @@ class ROM
 
     /** @var array<int, int> */ private array $rom = [];
 
+    /**
+     * Creates a new ROM instance.
+     *
+     * @param string|null $romDirectory Optional directory to load ROM files from
+     * @throws \RuntimeException If directory loading fails
+     */
     public function __construct(?string $romDirectory)
     {
         $this->reset();
@@ -21,7 +33,13 @@ class ROM
         }
     }
 
-    /** @param array<int, int> $romData */
+    /**
+     * Loads ROM data from an array indexed by address.
+     *
+     * Only addresses within ROM space ($8000-$FFFF) are loaded.
+     *
+     * @param array<int, int> $romData Array of address => byte mappings
+     */
     public function loadROM(array $romData): void
     {
         $this->rom = [];
@@ -32,6 +50,14 @@ class ROM
         }
     }
 
+    /**
+     * Loads ROM data from a binary file.
+     *
+     * File is loaded starting at $8000. Files larger than 32KB are truncated.
+     *
+     * @param string $binaryFile Path to the binary file
+     * @throws \RuntimeException If file not found or cannot be read
+     */
     public function loadBinaryROM(string $binaryFile): void
     {
         if (!file_exists($binaryFile)) {
@@ -58,11 +84,29 @@ class ROM
         }
     }
 
+    /**
+     * Reads a byte from ROM at the specified address.
+     *
+     * Uninitialized addresses return 0.
+     *
+     * @param int $address The memory address
+     * @return int The byte value (0-255)
+     */
     public function readByte(int $address): int
     {
         return $this->rom[$address] ?? 0;
     }
 
+    /**
+     * Loads ROM files from a directory using JSON metadata.
+     *
+     * Scans for .json files, loads their metadata, and loads corresponding
+     * .bin files in priority order. Each metadata file must specify: name,
+     * load_address, size, and priority.
+     *
+     * @param string $directory Path to directory containing ROM files
+     * @throws \RuntimeException If directory not found or cannot be scanned
+     */
     public function loadFromDirectory(string $directory): void
     {
         if (!is_dir($directory)) {
@@ -92,7 +136,12 @@ class ROM
         echo "Loaded " . count($romFiles) . " ROM file(s) from $directory\n";
     }
 
-    /** @return array<string, mixed>|null */
+    /**
+     * Loads and validates JSON metadata for a ROM file.
+     *
+     * @param string $metadataFile Path to the .json metadata file
+     * @return array<string, mixed>|null Metadata array or null if invalid
+     */
     private function loadMetadata(string $metadataFile): ?array
     {
         $content = file_get_contents($metadataFile);
@@ -123,7 +172,12 @@ class ROM
         return $metadata;
     }
 
-    /** @param array<string, mixed> $romInfo */
+    /**
+     * Loads a single ROM file using its metadata.
+     *
+     * @param string $directory Base directory path
+     * @param array<string, mixed> $romInfo ROM metadata including binary_file, load_address, size
+     */
     private function loadROMFile(string $directory, array $romInfo): void
     {
         $binaryFile = $romInfo['binary_file'];
@@ -162,6 +216,11 @@ class ROM
              " (" . $bytesToLoad . " bytes, priority {$romInfo['priority']})\n";
     }
 
+    /**
+     * Resets the ROM.
+     *
+     * ROM contents persist through reset (no operation performed).
+     */
     public function reset(): void
     {
         // ROM contents persist through reset

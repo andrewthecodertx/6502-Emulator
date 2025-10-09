@@ -6,6 +6,19 @@ namespace Emulator\Systems\BenEater;
 
 use Emulator\Systems\BenEater\Bus\PeripheralInterface;
 
+/**
+ * Memory-mapped serial UART for console I/O.
+ *
+ * Emulates a 6551 ACIA (Asynchronous Communications Interface Adapter) with
+ * full register support for data transmission/reception, status monitoring,
+ * and configuration. Connected to STDIN/STDOUT for terminal interaction.
+ *
+ * Register Map (offset from base address):
+ * - $00: Data Register (read/write)
+ * - $01: Status Register (read only)
+ * - $02: Command Register (write only)
+ * - $03: Control Register (write only)
+ */
 class UART implements PeripheralInterface
 {
     private const DATA_REGISTER = 0x00;    // RS1=0, RS0=0 (Read/Write)
@@ -51,6 +64,13 @@ class UART implements PeripheralInterface
     private float $stopBits = 1;                    // SBN bit: 1, 1.5, or 2 stop bits
     private bool $ctsbState = false;                // CTSB input: false=low (enabled), true=high (disabled)
 
+    /**
+     * Creates a new UART instance.
+     *
+     * Automatically connects to the terminal and configures non-blocking input.
+     *
+     * @param int $baseAddress The base memory address (default: $FE00)
+     */
     public function __construct(
         private int $baseAddress = 0xFE00
     ) {
@@ -58,11 +78,23 @@ class UART implements PeripheralInterface
         $this->connectToTerminal();
     }
 
+    /**
+     * Checks if this UART handles the specified address.
+     *
+     * @param int $address The memory address to check
+     * @return bool True if address is within base+0 to base+3
+     */
     public function handlesAddress(int $address): bool
     {
         return $address >= $this->baseAddress && $address <= ($this->baseAddress + 3);
     }
 
+    /**
+     * Reads a byte from the UART register at the specified address.
+     *
+     * @param int $address The memory address to read
+     * @return int The register value (0-255)
+     */
     public function read(int $address): int
     {
         $registerOffset = $address - $this->baseAddress;
@@ -84,6 +116,12 @@ class UART implements PeripheralInterface
         }
     }
 
+    /**
+     * Writes a byte to the UART register at the specified address.
+     *
+     * @param int $address The memory address to write
+     * @param int $value The value to write (will be masked to 8-bit)
+     */
     public function write(int $address, int $value): void
     {
         $registerOffset = $address - $this->baseAddress;
@@ -240,12 +278,22 @@ class UART implements PeripheralInterface
         }
     }
 
+    /**
+     * Performs one cycle of UART operation.
+     *
+     * Polls terminal input and updates status flags.
+     */
     public function tick(): void
     {
         $this->pollTerminalInput();
         $this->updateStatus();
     }
 
+    /**
+     * Resets the UART to initial state.
+     *
+     * Clears all buffers and resets registers to default values.
+     */
     public function reset(): void
     {
         $this->statusRegister = self::STATUS_TRANSMITTER_DATA_EMPTY;
@@ -303,77 +351,100 @@ class UART implements PeripheralInterface
         $this->statusRegister |= self::STATUS_TRANSMITTER_DATA_EMPTY;
     }
 
+    /** @return int The status register value */
     public function getStatusRegister(): int
     {
         return $this->statusRegister;
     }
 
+    /** @return int The command register value */
     public function getCommandRegister(): int
     {
         return $this->commandRegister;
     }
 
+    /** @return int The control register value */
     public function getControlRegister(): int
     {
         return $this->controlRegister;
     }
 
+    /** @return int Number of bytes in receive buffer */
     public function getReceiveBufferLength(): int
     {
         return strlen($this->receiveBuffer);
     }
 
+    /** @return int Number of bytes in transmit buffer */
     public function getTransmitBufferLength(): int
     {
         return strlen($this->transmitBuffer);
     }
 
+    /** @return bool True if IRQ is pending */
     public function isIrqPending(): bool
     {
         return $this->irqPending;
     }
 
+    /** Clears the pending IRQ state */
     public function clearIrq(): void
     {
         $this->irqPending = false;
         $this->statusRegister &= ~self::STATUS_IRQ;
     }
 
+    /** @return bool True if using external receiver clock */
     public function isUsingExternalReceiverClock(): bool
     {
         return $this->useExternalReceiverClock;
     }
 
+    /** @return int The selected baud rate (0-15) */
     public function getSelectedBaudRate(): int
     {
         return $this->selectedBaudRate;
     }
 
+    /** @return int The word length in bits (5-8) */
     public function getWordLength(): int
     {
         return $this->wordLength;
     }
 
+    /** @return float The number of stop bits (1, 1.5, or 2) */
     public function getStopBits(): float
     {
         return $this->stopBits;
     }
 
+    /**
+     * Sets the Clear To Send Bar signal state.
+     *
+     * @param bool $high True for high (transmitter disabled), false for low (enabled)
+     */
     public function setCTSB(bool $high): void
     {
         $this->ctsbState = $high;
     }
 
+    /** @return bool The CTSB signal state */
     public function getCTSB(): bool
     {
         return $this->ctsbState;
     }
 
+    /** @return bool True if transmitter is enabled (CTSB low) */
     public function isTransmitterEnabled(): bool
     {
         return !$this->ctsbState;
     }
 
+    /**
+     * Checks if this peripheral has a pending interrupt request.
+     *
+     * @return bool True if an IRQ is pending
+     */
     public function hasInterruptRequest(): bool
     {
         return $this->irqPending;

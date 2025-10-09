@@ -4,13 +4,35 @@ declare(strict_types=1);
 
 namespace Emulator\Core;
 
+/**
+ * JSON-Driven Instruction Interpreter
+ *
+ * Executes 6502 instructions based on declarative metadata from opcodes.json.
+ * Handles transfer, load, store, increment, logic, compare, and flag operations
+ * without requiring custom handler code for each instruction.
+ */
 class InstructionInterpreter
 {
+    /**
+     * Creates an interpreter linked to a CPU instance
+     *
+     * @param CPU $cpu The CPU this interpreter operates on
+     */
     public function __construct(
         private CPU $cpu
     ) {
     }
 
+    /**
+     * Executes an instruction based on its JSON metadata
+     *
+     * Dispatches to the appropriate execution method based on the operation type
+     * defined in the opcode's execution block, then updates CPU flags accordingly.
+     *
+     * @param Opcode $opcode The opcode to execute with execution metadata
+     * @return int Number of cycles consumed
+     * @throws \RuntimeException If opcode has no execution metadata or unknown type
+     */
     public function execute(Opcode $opcode): int
     {
         $execution = $opcode->getExecution();
@@ -41,7 +63,13 @@ class InstructionInterpreter
         return $opcode->getCycles();
     }
 
-    /** @param array<string, mixed> $execution */
+    /**
+     * Executes a register transfer operation (e.g., TAX, TYA)
+     *
+     * @param array<string, mixed> $execution Execution metadata with source and destination
+     * @return int The transferred value for flag setting
+     * @throws \RuntimeException If source or destination is missing or invalid
+     */
     private function executeTransfer(array $execution): int
     {
         $source = $execution['source'] ?? null;
@@ -57,7 +85,14 @@ class InstructionInterpreter
         return $value;
     }
 
-    /** @param array<string, mixed> $execution */
+    /**
+     * Executes a load operation (e.g., LDA, LDX, LDY)
+     *
+     * @param Opcode $opcode The opcode with addressing mode
+     * @param array<string, mixed> $execution Execution metadata with destination register
+     * @return int The loaded value for flag setting
+     * @throws \RuntimeException If destination register is missing or invalid
+     */
     private function executeLoad(Opcode $opcode, array $execution): int
     {
         $destination = $execution['destination'] ?? null;
@@ -73,7 +108,14 @@ class InstructionInterpreter
         return $value;
     }
 
-    /** @param array<string, mixed> $execution */
+    /**
+     * Executes a store operation (e.g., STA, STX, STY)
+     *
+     * @param Opcode $opcode The opcode with addressing mode
+     * @param array<string, mixed> $execution Execution metadata with source register
+     * @return int The stored value for flag setting
+     * @throws \RuntimeException If source register is missing or invalid
+     */
     private function executeStore(Opcode $opcode, array $execution): int
     {
         $source = $execution['source'] ?? null;
@@ -89,7 +131,12 @@ class InstructionInterpreter
         return $value;
     }
 
-    /** @param array<string, mixed> $execution */
+    /**
+     * Executes a flag set/clear operation (e.g., SEC, CLC, SEI)
+     *
+     * @param array<string, mixed> $execution Execution metadata with flag name and value
+     * @throws \RuntimeException If flag name or value is missing or invalid
+     */
     private function executeFlag(array $execution): void
     {
         $flag = $execution['flag'] ?? null;
@@ -113,7 +160,14 @@ class InstructionInterpreter
     }
 
     /**
-     * @param array<string, mixed> $execution
+     * Executes an increment/decrement operation (e.g., INC, DEC, INX)
+     *
+     * Supports both memory and register targets with positive or negative amounts.
+     *
+     * @param Opcode $opcode The opcode with addressing mode
+     * @param array<string, mixed> $execution Execution metadata with target and amount
+     * @return int The result value for flag setting
+     * @throws \RuntimeException If target or amount is missing or invalid
      */
     private function executeIncrement(Opcode $opcode, array $execution): int
     {
@@ -140,7 +194,14 @@ class InstructionInterpreter
         }
     }
 
-    /** @param array<string, mixed> $execution */
+    /**
+     * Executes a logical operation (e.g., AND, ORA, EOR)
+     *
+     * @param Opcode $opcode The opcode with addressing mode
+     * @param array<string, mixed> $execution Execution metadata with operation symbol
+     * @return int The result value for flag setting
+     * @throws \RuntimeException If operation is missing or invalid
+     */
     private function executeLogic(Opcode $opcode, array $execution): int
     {
         $operation = $execution['operation'] ?? null;
@@ -164,7 +225,16 @@ class InstructionInterpreter
         return $result;
     }
 
-    /** @param array<string, mixed> $execution */
+    /**
+     * Executes a comparison operation (e.g., CMP, CPX, CPY)
+     *
+     * Performs subtraction without storing result, only updating flags.
+     *
+     * @param Opcode $opcode The opcode with addressing mode
+     * @param array<string, mixed> $execution Execution metadata with register name
+     * @return int The comparison result for flag setting
+     * @throws \RuntimeException If register name is missing or invalid
+     */
     private function executeCompare(Opcode $opcode, array $execution): int
     {
         $register = $execution['register'] ?? null;
@@ -183,6 +253,13 @@ class InstructionInterpreter
         return $result;
     }
 
+    /**
+     * Gets the value of a CPU register by name
+     *
+     * @param string $register Register name (accumulator, registerX, registerY, stackPointer)
+     * @return int The register value
+     * @throws \RuntimeException If register name is not recognized
+     */
     private function getRegister(string $register): int
     {
         return match ($register) {
@@ -194,6 +271,13 @@ class InstructionInterpreter
         };
     }
 
+    /**
+     * Sets the value of a CPU register by name
+     *
+     * @param string $register Register name (accumulator, registerX, registerY, stackPointer)
+     * @param int $value Value to set (will be masked to 8 bits)
+     * @throws \RuntimeException If register name is not recognized
+     */
     private function setRegister(string $register, int $value): void
     {
         match ($register) {
@@ -205,7 +289,13 @@ class InstructionInterpreter
         };
     }
 
-    /** @param array<string> $flags */
+    /**
+     * Updates CPU status flags based on operation result
+     *
+     * @param int $value The result value to test
+     * @param array<string> $flags List of flag names to update (ZERO, NEGATIVE, CARRY, etc.)
+     * @throws \RuntimeException If a flag name is not recognized
+     */
     private function updateFlags(int $value, array $flags): void
     {
         foreach ($flags as $flag) {

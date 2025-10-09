@@ -49,6 +49,7 @@ class C64Bus implements BusInterface
     /** @var PeripheralInterface[] */
     private array $peripherals = [];
 
+    /** Creates a new C64 bus with default memory configuration. */
     public function __construct()
     {
         $this->ram = array_fill(0, 0x10000, 0);
@@ -58,11 +59,22 @@ class C64Bus implements BusInterface
         $this->colorRam = array_fill(0, 0x0400, 0);
     }
 
+    /**
+     * Attaches a peripheral to the bus for I/O area access.
+     *
+     * @param PeripheralInterface $peripheral The peripheral to attach
+     */
     public function attachPeripheral(PeripheralInterface $peripheral): void
     {
         $this->peripherals[] = $peripheral;
     }
 
+    /**
+     * Loads BASIC ROM from file.
+     *
+     * @param string $filename Path to 8KB BASIC ROM file
+     * @throws \RuntimeException If file cannot be read
+     */
     public function loadBasicRom(string $filename): void
     {
         $data = file_get_contents($filename);
@@ -75,6 +87,12 @@ class C64Bus implements BusInterface
         }
     }
 
+    /**
+     * Loads Character ROM from file.
+     *
+     * @param string $filename Path to 4KB Character ROM file
+     * @throws \RuntimeException If file cannot be read
+     */
     public function loadCharacterRom(string $filename): void
     {
         $data = file_get_contents($filename);
@@ -87,6 +105,12 @@ class C64Bus implements BusInterface
         }
     }
 
+    /**
+     * Loads KERNAL ROM from file.
+     *
+     * @param string $filename Path to 8KB KERNAL ROM file
+     * @throws \RuntimeException If file cannot be read
+     */
     public function loadKernalRom(string $filename): void
     {
         $data = file_get_contents($filename);
@@ -99,8 +123,12 @@ class C64Bus implements BusInterface
         }
     }
 
-
-    /** @param array<int, int> $data */
+    /**
+     * Loads a program into RAM.
+     *
+     * @param array<int, int> $data Program bytes
+     * @param int $startAddress Load address (default: $0801 for BASIC)
+     */
     public function loadProgram(array $data, int $startAddress = 0x0801): void
     {
         foreach ($data as $offset => $byte) {
@@ -109,6 +137,14 @@ class C64Bus implements BusInterface
         }
     }
 
+    /**
+     * Reads a byte from memory with banking logic.
+     *
+     * Respects LORAM, HIRAM, CHAREN bits for ROM/RAM/I/O selection.
+     *
+     * @param int $address The memory address (will be masked to 16-bit)
+     * @return int The byte value (0-255)
+     */
     public function read(int $address): int
     {
         $address &= 0xFFFF;
@@ -154,6 +190,14 @@ class C64Bus implements BusInterface
         return $this->ram[$address];
     }
 
+    /**
+     * Writes a byte to memory with banking logic.
+     *
+     * Respects banking bits for I/O area writes vs RAM writes.
+     *
+     * @param int $address The memory address (will be masked to 16-bit)
+     * @param int $value The byte value to write (will be masked to 8-bit)
+     */
     public function write(int $address, int $value): void
     {
         $address &= 0xFFFF;
@@ -183,6 +227,12 @@ class C64Bus implements BusInterface
         $this->ram[$address] = $value;
     }
 
+    /**
+     * Reads from I/O area ($D000-$DFFF).
+     *
+     * @param int $address The I/O address
+     * @return int The byte value (0-255)
+     */
     private function readIO(int $address): int
     {
         // Color RAM ($D800-$DBFF) - only lower 4 bits used
@@ -200,6 +250,12 @@ class C64Bus implements BusInterface
         return 0xFF;
     }
 
+    /**
+     * Writes to I/O area ($D000-$DFFF).
+     *
+     * @param int $address The I/O address
+     * @param int $value The byte value to write
+     */
     private function writeIO(int $address, int $value): void
     {
         // Color RAM ($D800-$DBFF) - only lower 4 bits used
@@ -216,6 +272,12 @@ class C64Bus implements BusInterface
         }
     }
 
+    /**
+     * Reads a 16-bit word from memory in little-endian format.
+     *
+     * @param int $address The starting memory address
+     * @return int The 16-bit word value (0-65535)
+     */
     public function readWord(int $address): int
     {
         $low = $this->read($address);
@@ -223,6 +285,7 @@ class C64Bus implements BusInterface
         return $low | ($high << 8);
     }
 
+    /** Updates all peripherals for one cycle. */
     public function tick(): void
     {
         foreach ($this->peripherals as $peripheral) {
@@ -230,14 +293,13 @@ class C64Bus implements BusInterface
         }
     }
 
+    /** @return int The CPU port data register value */
     public function getCpuPort(): int
     {
         return $this->cpuPort;
     }
 
-    /**
-     * @return array<int, int>
-     */
+    /** @return array<int, int> The 64KB RAM array */
     public function getRam(): array
     {
         return $this->ram;

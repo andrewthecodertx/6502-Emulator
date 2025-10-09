@@ -6,6 +6,13 @@ namespace Emulator\Systems\BenEater\Peripherals;
 
 use Emulator\Systems\BenEater\Bus\PeripheralInterface;
 
+/**
+ * 6522 Versatile Interface Adapter (VIA) emulation.
+ *
+ * Provides two 8-bit I/O ports with data direction registers, two 16-bit
+ * interval timers with one-shot or free-run modes, shift register, and
+ * interrupt control. Common in Apple II, Commodore, and BBC Micro systems.
+ */
 class VIA implements PeripheralInterface
 {
     public const REG_ORB = 0x00; // Output Register B

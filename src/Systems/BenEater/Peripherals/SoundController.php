@@ -6,6 +6,12 @@ namespace Emulator\Systems\BenEater\Peripherals;
 
 use Emulator\Systems\BenEater\Bus\PeripheralInterface;
 
+/**
+ * Four-channel sound controller with frequency, volume, and waveform control.
+ *
+ * Each channel has 16-bit frequency, 4-bit volume, and control registers for
+ * square, noise, or triangle waveforms. Audio output via speaker-test or sox.
+ */
 class SoundController implements PeripheralInterface
 {
     public const SOUND_BASE = 0xC400;
