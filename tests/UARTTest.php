@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests;
 
 use PHPUnit\Framework\TestCase;
-use Emulator\UART;
-use Emulator\RAM;
-use Emulator\ROM;
-use Emulator\CPU;
-use Emulator\Bus\SystemBus;
+use Emulator\Systems\BenEater\UART;
+use Emulator\Systems\BenEater\RAM;
+use Emulator\Systems\BenEater\ROM;
+use Emulator\Core\CPU;
+use Emulator\Systems\BenEater\Bus\SystemBus;
 
 class UARTTest extends TestCase
 {

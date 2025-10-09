@@ -5,8 +5,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Emulator\VideoMemory;
-use Emulator\ANSIRenderer;
+use Emulator\Systems\BenEater\VideoMemory;
+use Emulator\Systems\BenEater\ANSIRenderer;
 
 /**
  * Graphics Demo - Test ANSI Terminal Renderer

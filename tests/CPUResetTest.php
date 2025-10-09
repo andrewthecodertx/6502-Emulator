@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests;
 
 use PHPUnit\Framework\TestCase;
-use Emulator\CPU;
-use Emulator\RAM;
-use Emulator\ROM;
-use Emulator\StatusRegister;
+use Emulator\Core\CPU;
+use Emulator\Systems\BenEater\RAM;
+use Emulator\Systems\BenEater\ROM;
+use Emulator\Core\StatusRegister;
 
 class CPUResetTest extends TestCase
 {
@@ -33,7 +33,7 @@ class CPUResetTest extends TestCase
         };
 
         $this->ram = new RAM();
-        $bus = new \Emulator\Bus\SystemBus($this->ram, $rom);
+        $bus = new \Emulator\Systems\BenEater\Bus\SystemBus($this->ram, $rom);
         $this->cpu = new CPU($bus);
     }
 
@@ -96,7 +96,7 @@ class CPUResetTest extends TestCase
         };
 
         $customRam = new RAM();
-        $bus = new \Emulator\Bus\SystemBus($customRam, $customRom);
+        $bus = new \Emulator\Systems\BenEater\Bus\SystemBus($customRam, $customRom);
         $cpu = new CPU($bus);
         $cpu->reset();
         $cpu->step();
@@ -129,7 +129,7 @@ class CPUResetTest extends TestCase
                 }
             };
             $ram = new RAM();
-            $bus = new \Emulator\Bus\SystemBus($ram, $rom);
+            $bus = new \Emulator\Systems\BenEater\Bus\SystemBus($ram, $rom);
             $cpu = new CPU($bus);
             $cpu->sp = $case['initial'];
 
@@ -241,7 +241,7 @@ class CPUResetTest extends TestCase
             }
         };
         $ram = new RAM();
-        $bus = new \Emulator\Bus\SystemBus($ram, $rom);
+        $bus = new \Emulator\Systems\BenEater\Bus\SystemBus($ram, $rom);
         $cpu2 = new CPU($bus);
         $cpu2->halt();
         $this->assertTrue($cpu2->isHalted(), "CPU should be halted before reset");

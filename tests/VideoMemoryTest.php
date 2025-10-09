@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Emulator\VideoMemory;
+use Emulator\Systems\BenEater\VideoMemory;
 use PHPUnit\Framework\TestCase;
 
 class VideoMemoryTest extends TestCase

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 require_once 'vendor/autoload.php';
 
-use Emulator\CPU;
-use Emulator\RAM;
-use Emulator\ROM;
-use Emulator\UART;
-use Emulator\Bus\SystemBus;
-use Emulator\Peripherals\VIA;
+use Emulator\Core\CPU;
+use Emulator\Systems\BenEater\RAM;
+use Emulator\Systems\BenEater\ROM;
+use Emulator\Systems\BenEater\UART;
+use Emulator\Systems\BenEater\Bus\SystemBus;
+use Emulator\Systems\BenEater\Peripherals\VIA;
 
 function showUsage(): void
 {
