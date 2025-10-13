@@ -138,4 +138,27 @@ class ShiftRotate
 
         return $opcode->getCycles();
     }
+
+    // SLO: Shift Left and OR (undocumented, also known as ASO)
+    public function slo(Opcode $opcode): int
+    {
+        $addressingMode = $opcode->getAddressingMode();
+        $address = $this->cpu->getAddress($addressingMode);
+        $value = $this->cpu->getBus()->read($address);
+
+        // First: ASL - Arithmetic Shift Left
+        $shiftedValue = ($value << 1) & 0xFF;
+        $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
+        $this->cpu->getBus()->write($address, $shiftedValue);
+
+        // Second: ORA - OR with accumulator
+        $accumulator = $this->cpu->getAccumulator();
+        $result = $accumulator | $shiftedValue;
+
+        $this->cpu->setAccumulator($result);
+        $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
+        $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
+
+        return $opcode->getCycles();
+    }
 }

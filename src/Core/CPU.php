@@ -100,11 +100,18 @@ class CPU
      * Runs the CPU continuously until stopped
      *
      * Executes instructions in a loop until stop() is called.
+     * Dispatches signals every 10000 instructions for CTRL-C handling.
      */
     public function run(): void
     {
+        $instructionCount = 0;
         while ($this->running) {
             $this->step();
+
+            // Dispatch signals every 10000 instructions for CTRL-C handling
+            if (++$instructionCount % 10000 == 0 && function_exists('pcntl_signal_dispatch')) {
+                pcntl_signal_dispatch();
+            }
         }
     }
 
@@ -396,6 +403,7 @@ class CPU
           'ROL' => fn (Opcode $opcode) => $this->shiftRotateHandler->rol($opcode),
           'ROR' => fn (Opcode $opcode) => $this->shiftRotateHandler->ror($opcode),
           'RLA' => fn (Opcode $opcode) => $this->shiftRotateHandler->rla($opcode),
+          'SLO' => fn (Opcode $opcode) => $this->shiftRotateHandler->slo($opcode),
 
           'INC' => fn (Opcode $opcode) => $this->incDecHandler->inc($opcode),
           'DEC' => fn (Opcode $opcode) => $this->incDecHandler->dec($opcode),
@@ -403,6 +411,7 @@ class CPU
           'DEX' => fn (Opcode $opcode) => $this->incDecHandler->dex($opcode),
           'INY' => fn (Opcode $opcode) => $this->incDecHandler->iny($opcode),
           'DEY' => fn (Opcode $opcode) => $this->incDecHandler->dey($opcode),
+          'ISC' => fn (Opcode $opcode) => $this->incDecHandler->isc($opcode),
 
           'BEQ' => fn (Opcode $opcode) => $this->flowControlHandler->beq($opcode),
           'BNE' => fn (Opcode $opcode) => $this->flowControlHandler->bne($opcode),
@@ -432,8 +441,29 @@ class CPU
           'CLD' => fn (Opcode $opcode) => $this->flagsHandler->cld($opcode),
           'CLV' => fn (Opcode $opcode) => $this->flagsHandler->clv($opcode),
 
-          'NOP' => fn (Opcode $opcode) => $opcode->getCycles(),
+          'NOP' => fn (Opcode $opcode) => $this->nop($opcode),
         ];
+    }
+
+    /**
+     * Handles NOP (No Operation) instruction
+     *
+     * Does nothing but must consume operand bytes for multi-byte NOPs.
+     * For illegal NOPs (DOP/TOP), the operand is read but ignored.
+     *
+     * @param Opcode $opcode The NOP opcode
+     * @return int Number of cycles taken
+     */
+    private function nop(Opcode $opcode): int
+    {
+        // For NOPs with operands (not Implied addressing), we need to
+        // advance PC over the operand bytes by calling getAddress()
+        $addressingMode = $opcode->getAddressingMode();
+        if ($addressingMode !== 'Implied') {
+            $this->getAddress($addressingMode);
+        }
+
+        return $opcode->getCycles();
     }
 
     /**
