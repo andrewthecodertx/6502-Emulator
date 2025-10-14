@@ -1,6 +1,6 @@
 <?php
 
-namespace Emulator\Systems\BenEater;
+namespace Emulator\Systems\Eater;
 
 enum AddressingMode
 {

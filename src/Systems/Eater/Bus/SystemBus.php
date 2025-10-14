@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Systems\BenEater\Bus;
+namespace Emulator\Systems\Eater\Bus;
 
 use Emulator\Core\CPU;
 use Emulator\Core\BusInterface;
-use Emulator\Systems\BenEater\RAM;
-use Emulator\Systems\BenEater\ROM;
+use Emulator\Systems\Eater\RAM;
+use Emulator\Systems\Eater\ROM;
 
 /**
  * Memory-mapped I/O bus for the BenEater 6502 system.

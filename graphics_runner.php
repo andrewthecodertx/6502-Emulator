@@ -6,11 +6,11 @@ declare(strict_types=1);
 require_once './vendor/autoload.php';
 
 use Emulator\Core\CPU;
-use Emulator\Systems\BenEater\RAM;
-use Emulator\Systems\BenEater\ROM;
-use Emulator\Systems\BenEater\VideoMemory;
-use Emulator\Systems\BenEater\ANSIRenderer;
-use Emulator\Systems\BenEater\Bus\SystemBus;
+use Emulator\Systems\Eater\RAM;
+use Emulator\Systems\Eater\ROM;
+use Emulator\Systems\Eater\VideoMemory;
+use Emulator\Systems\Eater\ANSIRenderer;
+use Emulator\Systems\Eater\Bus\SystemBus;
 
 function showUsage(): void
 {

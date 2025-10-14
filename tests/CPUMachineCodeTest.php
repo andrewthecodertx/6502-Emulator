@@ -6,8 +6,8 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use Emulator\Core\CPU;
-use Emulator\Systems\BenEater\RAM;
-use Emulator\Systems\BenEater\ROM;
+use Emulator\Systems\Eater\RAM;
+use Emulator\Systems\Eater\ROM;
 use Emulator\Core\StatusRegister;
 
 class CPUMachineCodeTest extends TestCase
@@ -41,7 +41,7 @@ class CPUMachineCodeTest extends TestCase
         };
 
         $this->ram = new RAM();
-        $bus = new \Emulator\Systems\BenEater\Bus\SystemBus($this->ram, $rom);
+        $bus = new \Emulator\Systems\Eater\Bus\SystemBus($this->ram, $rom);
         $this->cpu = new CPU($bus);
     }
 
@@ -131,7 +131,7 @@ class CPUMachineCodeTest extends TestCase
             };
 
             $customRam = new RAM();
-            $bus = new \Emulator\Systems\BenEater\Bus\SystemBus($customRam, $customRom);
+            $bus = new \Emulator\Systems\Eater\Bus\SystemBus($customRam, $customRom);
             $customCpu = new CPU($bus);
 
             $customCpu->reset();
@@ -217,7 +217,7 @@ class CPUMachineCodeTest extends TestCase
             };
 
             $customRam = new RAM();
-            $bus = new \Emulator\Systems\BenEater\Bus\SystemBus($customRam, $customRom);
+            $bus = new \Emulator\Systems\Eater\Bus\SystemBus($customRam, $customRom);
             $customCpu = new CPU($bus);
 
             $customCpu->reset();

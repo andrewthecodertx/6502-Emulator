@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Systems\BenEater;
+namespace Emulator\Systems\Eater;
 
-use Emulator\Systems\BenEater\Bus\PeripheralInterface;
+use Emulator\Systems\Eater\Bus\PeripheralInterface;
 
 /**
  * Framebuffer memory for 256x240 graphics display.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Systems\BenEater\Bus;
+namespace Emulator\Systems\Eater\Bus;
 
 /**
  * Contract for memory-mapped peripherals on the BenEater system bus.

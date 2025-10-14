@@ -1,27 +1,27 @@
-# BenEater System Examples
+# Eater System Examples
 
 This directory contains example programs and utilities specific to the Ben Eater 6502 system.
 
 ## Programs
 
 ### loadbin.php
-Main program loader for the BenEater system. Loads assembled 6502 programs into memory and executes them.
+Main program loader for the Eater system. Loads assembled 6502 programs into memory and executes them.
 
 **Usage:**
 ```bash
-php src/Systems/BenEater/examples/loadbin.php <program.bin> [load_address]
+php src/Systems/Eater/examples/loadbin.php <program.bin> [load_address]
 ```
 
 **Examples:**
 ```bash
 # Load BIOS to ROM (default $8000)
-php src/Systems/BenEater/examples/loadbin.php roms/bios.bin
+php src/Systems/Eater/examples/loadbin.php roms/bios.bin
 
 # Load program to specific address
-php src/Systems/BenEater/examples/loadbin.php roms/program.bin 0200
+php src/Systems/Eater/examples/loadbin.php roms/program.bin 0200
 
 # Load Wozmon monitor
-php src/Systems/BenEater/examples/loadbin.php roms/wozmon_uart.bin
+php src/Systems/Eater/examples/loadbin.php roms/wozmon_uart.bin
 ```
 
 **Default Addresses:**
@@ -33,7 +33,7 @@ Demonstrates the ANSI terminal graphics capabilities using the VideoMemory and A
 
 **Usage:**
 ```bash
-php src/Systems/BenEater/examples/graphics_demo.php
+php src/Systems/Eater/examples/graphics_demo.php
 ```
 
 **Features:**
@@ -45,7 +45,7 @@ php src/Systems/BenEater/examples/graphics_demo.php
 
 ## System Configuration
 
-The BenEater system uses this memory map:
+The Eater system uses this memory map:
 
 ```
 $0000-$7FFF: RAM (32KB)

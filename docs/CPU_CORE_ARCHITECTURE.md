@@ -29,7 +29,7 @@ src/
 │       └── Flags.php              # Flag operations
 │
 └── Systems/
-    └── BenEater/                  # Ben Eater-style system
+    └── Eater/                  # Ben Eater-style system
         ├── Bus/
         │   ├── SystemBus.php      # Memory-mapped I/O bus
         │   └── PeripheralInterface.php
@@ -344,7 +344,7 @@ echo sprintf("Value at $00: 0x%02X\n", $bus->read(0x00)); // 0x42
 
 ## Next Steps
 
-1. Study `src/Systems/BenEater/` for a complete working example
+1. Study `src/Systems/Eater/` for a complete working example
 2. Implement your bus with the memory map you need
 3. Add peripherals as needed
 4. Load your ROM/programs

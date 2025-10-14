@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Systems\BenEater\Peripherals;
+namespace Emulator\Systems\Eater\Peripherals;
 
-use Emulator\Systems\BenEater\Bus\PeripheralInterface;
+use Emulator\Systems\Eater\Bus\PeripheralInterface;
 
 /**
  * 6522 Versatile Interface Adapter (VIA) emulation.

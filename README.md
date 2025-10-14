@@ -23,7 +23,7 @@ cycle counting
 
 ### System Implementations
 
-#### BenEater System
+#### Eater System
 
 * RAM and ROM memory components with flexible loading mechanisms
 * Serial UART (6551 ACIA emulation) for interactive I/O
@@ -96,16 +96,16 @@ script is provided to assemble them.
 
 ### Running the Emulator
 
-#### BenEater System
+#### Eater System
 
-You can run any assembled program using the `loadbin.php` script located in `src/Systems/BenEater/examples/`.
+You can run any assembled program using the `loadbin.php` script located in `src/Systems/Eater/examples/`.
 
 1. **Run the BIOS:**
     The BIOS will perform a quick memory test and then wait for you to enter a
     memory address to jump to.
 
     ```bash
-    php src/Systems/BenEater/examples/loadbin.php bios.bin
+    php src/Systems/Eater/examples/loadbin.php bios.bin
     ```
 
 2. **Run Wozmon:**
@@ -113,7 +113,7 @@ You can run any assembled program using the `loadbin.php` script located in `src
     and execute code.
 
     ```bash
-    php src/Systems/BenEater/examples/loadbin.php wozmon_uart.bin
+    php src/Systems/Eater/examples/loadbin.php wozmon_uart.bin
     ```
 
     Once Wozmon starts, you can interact with it. For example, to view the
@@ -124,7 +124,7 @@ You can run any assembled program using the `loadbin.php` script located in `src
     A demonstration of the ANSI terminal rendering system.
 
     ```bash
-    php src/Systems/BenEater/programs/graphics_demo.php
+    php src/Systems/Eater/programs/graphics_demo.php
     ```
 
 #### Commodore 64 System
@@ -159,7 +159,7 @@ overflow, branches, stack ops)
 Each system implements `BusInterface` and provides its own memory map and
 peripherals:
 
-* **BenEater/** - Ben Eater-style computer with UART, video, and I/O peripherals
+* **Eater/** - Ben Eater-style computer with UART, video, and I/O peripherals
 * **C64/** - Commodore 64 with VIC-II, SID, CIA chips and memory banking
 
 See `docs/CPU_CORE_ARCHITECTURE.md` for detailed information on building new
@@ -207,7 +207,7 @@ src/
 │   └── Instructions/           # Complex instruction handlers
 │
 └── Systems/
-    ├── BenEater/               # Ben Eater-style system
+    ├── Eater/               # Ben Eater-style system
     │   ├── Bus/
     │   │   ├── SystemBus.php   # Memory-mapped I/O bus
     │   │   └── PeripheralInterface.php

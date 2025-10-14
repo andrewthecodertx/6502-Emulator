@@ -5,7 +5,7 @@ namespace Emulator\Systems\C64\Bus;
 /**
  * Contract for memory-mapped peripherals on the C64 system bus.
  *
- * Similar to BenEater's PeripheralInterface but without interrupt support
+ * Similar to Eater's PeripheralInterface but without interrupt support
  * (C64 peripherals handle their own interrupt signaling).
  */
 interface PeripheralInterface

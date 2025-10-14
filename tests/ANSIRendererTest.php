@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Emulator\Systems\BenEater\ANSIRenderer;
-use Emulator\Systems\BenEater\VideoMemory;
+use Emulator\Systems\Eater\ANSIRenderer;
+use Emulator\Systems\Eater\VideoMemory;
 use PHPUnit\Framework\TestCase;
 
 class ANSIRendererTest extends TestCase

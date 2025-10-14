@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Systems\BenEater\Peripherals;
+namespace Emulator\Systems\Eater\Peripherals;
 
-use Emulator\Systems\BenEater\Bus\PeripheralInterface;
+use Emulator\Systems\Eater\Bus\PeripheralInterface;
 
 /**
  * PS/2-style keyboard input controller with 16-byte FIFO buffer.

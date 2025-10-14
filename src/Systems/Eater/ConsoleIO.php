@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Systems\BenEater;
+namespace Emulator\Systems\Eater;
 
 /**
  * Simple console I/O utility for character-based terminal interaction.

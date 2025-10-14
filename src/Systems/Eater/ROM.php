@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Systems\BenEater;
+namespace Emulator\Systems\Eater;
 
 /**
  * Read-only memory with multiple loading mechanisms.

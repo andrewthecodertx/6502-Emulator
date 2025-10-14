@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Systems\BenEater;
+namespace Emulator\Systems\Eater;
 
 /**
  * Terminal renderer using ANSI escape codes for framebuffer display.
