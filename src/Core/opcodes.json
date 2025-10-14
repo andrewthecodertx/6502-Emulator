@@ -31,6 +31,17 @@
       }
     },
     {
+      "opcode": "0x02",
+      "mnemonic": "JAM",
+      "addressing mode": "Implied",
+      "bytes": 1,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x03",
       "mnemonic": "SLO",
       "addressing mode": "X-Indexed Zero Page Indirect",
@@ -133,6 +144,17 @@
       "operation": "",
       "description": "Arithmetic shift left - shifts accumulator left one bit, bit 7 goes to carry, bit 0 becomes 0",
       "illegal": false
+    },
+    {
+      "opcode": "0x0B",
+      "mnemonic": "ANC",
+      "addressing mode": "Immediate",
+      "bytes": 2,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - AND with accumulator then move bit 7 to carry (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x0C",
@@ -430,6 +452,17 @@
       }
     },
     {
+      "opcode": "0x22",
+      "mnemonic": "JAM",
+      "addressing mode": "Implied",
+      "bytes": 1,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x23",
       "mnemonic": "RLA",
       "addressing mode": "X-Indexed Zero Page Indirect",
@@ -586,6 +619,17 @@
       "illegal": false
     },
     {
+      "opcode": "0x2F",
+      "mnemonic": "RLA",
+      "addressing mode": "Absolute",
+      "bytes": 3,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate left then AND with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x30",
       "mnemonic": "BMI",
       "addressing mode": "Relative",
@@ -624,6 +668,17 @@
       "additional cycles": "",
       "operation": "",
       "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0x33",
+      "mnemonic": "RLA",
+      "addressing mode": "Zero Page Indirect Y-Indexed",
+      "bytes": 2,
+      "cycles": 8,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate left then AND with accumulator (undocumented)",
       "illegal": true
     },
     {
@@ -666,6 +721,17 @@
       "operation": "",
       "description": "Rotate left - shifts memory left one bit, carry goes to bit 0, bit 7 goes to carry",
       "illegal": false
+    },
+    {
+      "opcode": "0x37",
+      "mnemonic": "RLA",
+      "addressing mode": "X-Indexed Zero Page",
+      "bytes": 2,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate left then AND with accumulator (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x38",
@@ -714,6 +780,17 @@
       "illegal": true
     },
     {
+      "opcode": "0x3B",
+      "mnemonic": "RLA",
+      "addressing mode": "Y-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 7,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate left then AND with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x3C",
       "mnemonic": "NOP",
       "addressing mode": "X-Indexed Absolute",
@@ -755,6 +832,17 @@
       "illegal": false
     },
     {
+      "opcode": "0x3F",
+      "mnemonic": "RLA",
+      "addressing mode": "X-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 7,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate left then AND with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x40",
       "mnemonic": "RTI",
       "addressing mode": "Implied",
@@ -783,6 +871,28 @@
           "NEGATIVE"
         ]
       }
+    },
+    {
+      "opcode": "0x42",
+      "mnemonic": "JAM",
+      "addressing mode": "Implied",
+      "bytes": 1,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0x43",
+      "mnemonic": "SRE",
+      "addressing mode": "X-Indexed Zero Page Indirect",
+      "bytes": 2,
+      "cycles": 8,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - logical shift right then XOR with accumulator (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x44",
@@ -826,6 +936,17 @@
       "illegal": false
     },
     {
+      "opcode": "0x47",
+      "mnemonic": "SRE",
+      "addressing mode": "Zero Page",
+      "bytes": 2,
+      "cycles": 5,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - logical shift right then XOR with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x48",
       "mnemonic": "PHA",
       "addressing mode": "Implied",
@@ -865,6 +986,17 @@
       "operation": "",
       "description": "Logical shift right - shifts accumulator right one bit, bit 0 goes to carry, bit 7 becomes 0",
       "illegal": false
+    },
+    {
+      "opcode": "0x4B",
+      "mnemonic": "ALR",
+      "addressing mode": "Immediate",
+      "bytes": 2,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - AND with accumulator then logical shift right (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x4C",
@@ -908,6 +1040,17 @@
       "illegal": false
     },
     {
+      "opcode": "0x4F",
+      "mnemonic": "SRE",
+      "addressing mode": "Absolute",
+      "bytes": 3,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - logical shift right then XOR with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x50",
       "mnemonic": "BVC",
       "addressing mode": "Relative",
@@ -946,6 +1089,17 @@
       "additional cycles": "",
       "operation": "",
       "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0x53",
+      "mnemonic": "SRE",
+      "addressing mode": "Zero Page Indirect Y-Indexed",
+      "bytes": 2,
+      "cycles": 8,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - logical shift right then XOR with accumulator (undocumented)",
       "illegal": true
     },
     {
@@ -988,6 +1142,17 @@
       "operation": "",
       "description": "Logical shift right - shifts memory right one bit, bit 0 goes to carry, bit 7 becomes 0",
       "illegal": false
+    },
+    {
+      "opcode": "0x57",
+      "mnemonic": "SRE",
+      "addressing mode": "X-Indexed Zero Page",
+      "bytes": 2,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - logical shift right then XOR with accumulator (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x58",
@@ -1036,6 +1201,17 @@
       "illegal": true
     },
     {
+      "opcode": "0x5B",
+      "mnemonic": "SRE",
+      "addressing mode": "Y-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 7,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - logical shift right then XOR with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x5C",
       "mnemonic": "NOP",
       "addressing mode": "X-Indexed Absolute",
@@ -1077,6 +1253,17 @@
       "illegal": false
     },
     {
+      "opcode": "0x5F",
+      "mnemonic": "SRE",
+      "addressing mode": "X-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 7,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - logical shift right then XOR with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x60",
       "mnemonic": "RTS",
       "addressing mode": "Implied",
@@ -1097,6 +1284,28 @@
       "operation": "",
       "description": "Add memory to accumulator with carry",
       "illegal": false
+    },
+    {
+      "opcode": "0x62",
+      "mnemonic": "JAM",
+      "addressing mode": "Implied",
+      "bytes": 1,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0x63",
+      "mnemonic": "RRA",
+      "addressing mode": "X-Indexed Zero Page Indirect",
+      "bytes": 2,
+      "cycles": 8,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate right then add with carry (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x64",
@@ -1132,6 +1341,17 @@
       "illegal": false
     },
     {
+      "opcode": "0x67",
+      "mnemonic": "RRA",
+      "addressing mode": "Zero Page",
+      "bytes": 2,
+      "cycles": 5,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate right then add with carry (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x68",
       "mnemonic": "PLA",
       "addressing mode": "Implied",
@@ -1163,6 +1383,17 @@
       "operation": "",
       "description": "Rotate right - shifts accumulator right one bit, carry goes to bit 7, bit 0 goes to carry",
       "illegal": false
+    },
+    {
+      "opcode": "0x6B",
+      "mnemonic": "ARR",
+      "addressing mode": "Immediate",
+      "bytes": 2,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - AND with accumulator then rotate right (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x6C",
@@ -1198,6 +1429,17 @@
       "illegal": false
     },
     {
+      "opcode": "0x6F",
+      "mnemonic": "RRA",
+      "addressing mode": "Absolute",
+      "bytes": 3,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate right then add with carry (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x70",
       "mnemonic": "BVS",
       "addressing mode": "Relative",
@@ -1218,6 +1460,28 @@
       "operation": "",
       "description": "Add memory to accumulator with carry - adds 1 cycle if page boundary crossed",
       "illegal": false
+    },
+    {
+      "opcode": "0x72",
+      "mnemonic": "JAM",
+      "addressing mode": "Implied",
+      "bytes": 1,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0x73",
+      "mnemonic": "RRA",
+      "addressing mode": "Zero Page Indirect Y-Indexed",
+      "bytes": 2,
+      "cycles": 8,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate right then add with carry (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x74",
@@ -1251,6 +1515,17 @@
       "operation": "",
       "description": "Rotate right - shifts memory right one bit, carry goes to bit 7, bit 0 goes to carry",
       "illegal": false
+    },
+    {
+      "opcode": "0x77",
+      "mnemonic": "RRA",
+      "addressing mode": "X-Indexed Zero Page",
+      "bytes": 2,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate right then add with carry (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x78",
@@ -1291,6 +1566,17 @@
       "illegal": true
     },
     {
+      "opcode": "0x7B",
+      "mnemonic": "RRA",
+      "addressing mode": "Y-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 7,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate right then add with carry (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x7C",
       "mnemonic": "NOP",
       "addressing mode": "X-Indexed Absolute",
@@ -1322,6 +1608,17 @@
       "operation": "",
       "description": "Rotate right - shifts memory right one bit, carry goes to bit 7, bit 0 goes to carry",
       "illegal": false
+    },
+    {
+      "opcode": "0x7F",
+      "mnemonic": "RRA",
+      "addressing mode": "X-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 7,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - rotate right then add with carry (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x80",
@@ -1421,6 +1718,17 @@
       }
     },
     {
+      "opcode": "0x87",
+      "mnemonic": "SAX",
+      "addressing mode": "Zero Page",
+      "bytes": 2,
+      "cycles": 3,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - store A AND X in memory (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x88",
       "mnemonic": "DEY",
       "addressing mode": "Implied",
@@ -1472,6 +1780,17 @@
       }
     },
     {
+      "opcode": "0x8B",
+      "mnemonic": "ANE",
+      "addressing mode": "Immediate",
+      "bytes": 2,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - highly unstable, AND X with accumulator then AND with immediate (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x8C",
       "mnemonic": "STY",
       "addressing mode": "Absolute",
@@ -1520,6 +1839,17 @@
       }
     },
     {
+      "opcode": "0x8F",
+      "mnemonic": "SAX",
+      "addressing mode": "Absolute",
+      "bytes": 3,
+      "cycles": 4,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - store A AND X in memory (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0x90",
       "mnemonic": "BCC",
       "addressing mode": "Relative",
@@ -1545,6 +1875,28 @@
         "flags": [],
         "source": "accumulator"
       }
+    },
+    {
+      "opcode": "0x92",
+      "mnemonic": "JAM",
+      "addressing mode": "Implied",
+      "bytes": 1,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0x93",
+      "mnemonic": "SHA",
+      "addressing mode": "Zero Page Indirect Y-Indexed",
+      "bytes": 2,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - store A AND X AND (high-byte of address + 1) (undocumented, unstable)",
+      "illegal": true
     },
     {
       "opcode": "0x94",
@@ -1593,6 +1945,17 @@
         "flags": [],
         "source": "registerX"
       }
+    },
+    {
+      "opcode": "0x97",
+      "mnemonic": "SAX",
+      "addressing mode": "Y-Indexed Zero Page",
+      "bytes": 2,
+      "cycles": 4,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - store A AND X in memory (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0x98",
@@ -1648,6 +2011,28 @@
       }
     },
     {
+      "opcode": "0x9B",
+      "mnemonic": "SHS",
+      "addressing mode": "Y-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 5,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - transfer A AND X to stack pointer then store A AND X AND (high-byte + 1) (undocumented, unstable)",
+      "illegal": true
+    },
+    {
+      "opcode": "0x9C",
+      "mnemonic": "SHY",
+      "addressing mode": "X-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 5,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - store Y AND (high-byte of address + 1) (undocumented, unstable)",
+      "illegal": true
+    },
+    {
       "opcode": "0x9D",
       "mnemonic": "STA",
       "addressing mode": "X-Indexed Absolute",
@@ -1662,6 +2047,28 @@
         "flags": [],
         "source": "accumulator"
       }
+    },
+    {
+      "opcode": "0x9E",
+      "mnemonic": "SHX",
+      "addressing mode": "Y-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 5,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - store X AND (high-byte of address + 1) (undocumented, unstable)",
+      "illegal": true
+    },
+    {
+      "opcode": "0x9F",
+      "mnemonic": "SHA",
+      "addressing mode": "Y-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 5,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - store A AND X AND (high-byte of address + 1) (undocumented, unstable)",
+      "illegal": true
     },
     {
       "opcode": "0xA0",
@@ -1721,6 +2128,17 @@
       }
     },
     {
+      "opcode": "0xA3",
+      "mnemonic": "LAX",
+      "addressing mode": "X-Indexed Zero Page Indirect",
+      "bytes": 2,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - load accumulator and X register with memory (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xA4",
       "mnemonic": "LDY",
       "addressing mode": "Zero Page",
@@ -1776,6 +2194,17 @@
         ],
         "destination": "registerX"
       }
+    },
+    {
+      "opcode": "0xA7",
+      "mnemonic": "LAX",
+      "addressing mode": "Zero Page",
+      "bytes": 2,
+      "cycles": 3,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - load accumulator and X register with memory (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0xA8",
@@ -1837,6 +2266,17 @@
       }
     },
     {
+      "opcode": "0xAB",
+      "mnemonic": "LXA",
+      "addressing mode": "Immediate",
+      "bytes": 2,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - highly unstable, AND with accumulator then transfer to X (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xAC",
       "mnemonic": "LDY",
       "addressing mode": "Absolute",
@@ -1894,6 +2334,17 @@
       }
     },
     {
+      "opcode": "0xAF",
+      "mnemonic": "LAX",
+      "addressing mode": "Absolute",
+      "bytes": 3,
+      "cycles": 4,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - load accumulator and X register with memory (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xB0",
       "mnemonic": "BCS",
       "addressing mode": "Relative",
@@ -1922,6 +2373,28 @@
         ],
         "destination": "accumulator"
       }
+    },
+    {
+      "opcode": "0xB2",
+      "mnemonic": "JAM",
+      "addressing mode": "Implied",
+      "bytes": 1,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0xB3",
+      "mnemonic": "LAX",
+      "addressing mode": "Zero Page Indirect Y-Indexed",
+      "bytes": 2,
+      "cycles": 5,
+      "additional cycles": "p",
+      "operation": "",
+      "description": "Illegal opcode - load accumulator and X register with memory (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0xB4",
@@ -1981,6 +2454,17 @@
       }
     },
     {
+      "opcode": "0xB7",
+      "mnemonic": "LAX",
+      "addressing mode": "Y-Indexed Zero Page",
+      "bytes": 2,
+      "cycles": 4,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - load accumulator and X register with memory (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xB8",
       "mnemonic": "CLV",
       "addressing mode": "Implied",
@@ -2034,6 +2518,17 @@
           "NEGATIVE"
         ]
       }
+    },
+    {
+      "opcode": "0xBB",
+      "mnemonic": "LAS",
+      "addressing mode": "Y-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 4,
+      "additional cycles": "p",
+      "operation": "",
+      "description": "Illegal opcode - AND memory with stack pointer, transfer to A, X, and SP (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0xBC",
@@ -2093,6 +2588,17 @@
       }
     },
     {
+      "opcode": "0xBF",
+      "mnemonic": "LAX",
+      "addressing mode": "Y-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 4,
+      "additional cycles": "p",
+      "operation": "",
+      "description": "Illegal opcode - load accumulator and X register with memory (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xC0",
       "mnemonic": "CPY",
       "addressing mode": "Immediate",
@@ -2141,6 +2647,17 @@
       "additional cycles": "",
       "operation": "",
       "description": "Illegal opcode - two-byte NOP (DOP, undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0xC3",
+      "mnemonic": "DCP",
+      "addressing mode": "X-Indexed Zero Page Indirect",
+      "bytes": 2,
+      "cycles": 8,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - decrement memory then compare with accumulator (undocumented)",
       "illegal": true
     },
     {
@@ -2204,6 +2721,17 @@
       }
     },
     {
+      "opcode": "0xC7",
+      "mnemonic": "DCP",
+      "addressing mode": "Zero Page",
+      "bytes": 2,
+      "cycles": 5,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - decrement memory then compare with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xC8",
       "mnemonic": "INY",
       "addressing mode": "Implied",
@@ -2262,6 +2790,17 @@
           "NEGATIVE"
         ]
       }
+    },
+    {
+      "opcode": "0xCB",
+      "mnemonic": "SBX",
+      "addressing mode": "Immediate",
+      "bytes": 2,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - AND X register with accumulator and subtract immediate (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0xCC",
@@ -2324,6 +2863,17 @@
       }
     },
     {
+      "opcode": "0xCF",
+      "mnemonic": "DCP",
+      "addressing mode": "Absolute",
+      "bytes": 3,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - decrement memory then compare with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xD0",
       "mnemonic": "BNE",
       "addressing mode": "Relative",
@@ -2353,6 +2903,28 @@
           "NEGATIVE"
         ]
       }
+    },
+    {
+      "opcode": "0xD2",
+      "mnemonic": "JAM",
+      "addressing mode": "Implied",
+      "bytes": 1,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0xD3",
+      "mnemonic": "DCP",
+      "addressing mode": "Zero Page Indirect Y-Indexed",
+      "bytes": 2,
+      "cycles": 8,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - decrement memory then compare with accumulator (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0xD4",
@@ -2406,6 +2978,17 @@
       }
     },
     {
+      "opcode": "0xD7",
+      "mnemonic": "DCP",
+      "addressing mode": "X-Indexed Zero Page",
+      "bytes": 2,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - decrement memory then compare with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xD8",
       "mnemonic": "CLD",
       "addressing mode": "Implied",
@@ -2453,6 +3036,17 @@
       "illegal": true
     },
     {
+      "opcode": "0xDB",
+      "mnemonic": "DCP",
+      "addressing mode": "Y-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 7,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - decrement memory then compare with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xDC",
       "mnemonic": "NOP",
       "addressing mode": "X-Indexed Absolute",
@@ -2482,6 +3076,28 @@
           "NEGATIVE"
         ]
       }
+    },
+    {
+      "opcode": "0xDE",
+      "mnemonic": "DCP",
+      "addressing mode": "X-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 7,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - decrement memory then compare with accumulator (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0xDF",
+      "mnemonic": "DCP",
+      "addressing mode": "X-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 7,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - decrement memory then compare with accumulator (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0xE0",
@@ -2523,6 +3139,17 @@
       "additional cycles": "",
       "operation": "",
       "description": "Illegal opcode - two-byte NOP (DOP, undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0xE3",
+      "mnemonic": "ISC",
+      "addressing mode": "X-Indexed Zero Page Indirect",
+      "bytes": 2,
+      "cycles": 8,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - increment memory then subtract with carry (undocumented)",
       "illegal": true
     },
     {
@@ -2575,6 +3202,17 @@
           "NEGATIVE"
         ]
       }
+    },
+    {
+      "opcode": "0xE7",
+      "mnemonic": "ISC",
+      "addressing mode": "Zero Page",
+      "bytes": 2,
+      "cycles": 5,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - increment memory then subtract with carry (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0xE8",
@@ -2681,6 +3319,17 @@
       }
     },
     {
+      "opcode": "0xEF",
+      "mnemonic": "ISC",
+      "addressing mode": "Absolute",
+      "bytes": 3,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - increment memory then subtract with carry (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xF0",
       "mnemonic": "BEQ",
       "addressing mode": "Relative",
@@ -2701,6 +3350,28 @@
       "operation": "",
       "description": "Subtract memory from accumulator with borrow (carry) - adds 1 cycle if page boundary crossed",
       "illegal": false
+    },
+    {
+      "opcode": "0xF2",
+      "mnemonic": "JAM",
+      "addressing mode": "Implied",
+      "bytes": 1,
+      "cycles": 2,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - halts the CPU (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0xF3",
+      "mnemonic": "ISC",
+      "addressing mode": "Zero Page Indirect Y-Indexed",
+      "bytes": 2,
+      "cycles": 8,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - increment memory then subtract with carry (undocumented)",
+      "illegal": true
     },
     {
       "opcode": "0xF4",
@@ -2745,6 +3416,17 @@
       }
     },
     {
+      "opcode": "0xF7",
+      "mnemonic": "ISC",
+      "addressing mode": "X-Indexed Zero Page",
+      "bytes": 2,
+      "cycles": 6,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - increment memory then subtract with carry (undocumented)",
+      "illegal": true
+    },
+    {
       "opcode": "0xF8",
       "mnemonic": "SED",
       "addressing mode": "Implied",
@@ -2780,6 +3462,17 @@
       "additional cycles": "",
       "operation": "",
       "description": "Illegal opcode - one-byte NOP (undocumented)",
+      "illegal": true
+    },
+    {
+      "opcode": "0xFB",
+      "mnemonic": "ISC",
+      "addressing mode": "Y-Indexed Absolute",
+      "bytes": 3,
+      "cycles": 7,
+      "additional cycles": "",
+      "operation": "",
+      "description": "Illegal opcode - increment memory then subtract with carry (undocumented)",
       "illegal": true
     },
     {
