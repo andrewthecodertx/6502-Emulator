@@ -13,6 +13,7 @@ use Emulator\Core\Instructions\IncDec;
 use Emulator\Core\Instructions\FlowControl;
 use Emulator\Core\Instructions\Stack;
 use Emulator\Core\Instructions\Flags;
+use Emulator\Core\Instructions\IllegalOpcodes;
 
 /**
  * 6502 CPU Emulator
@@ -55,6 +56,7 @@ class CPU
     private readonly FlowControl $flowControlHandler;
     private readonly Stack $stackHandler;
     private readonly Flags $flagsHandler;
+    private readonly IllegalOpcodes $illegalOpcodesHandler;
 
     /**
      * Initializes the CPU with a bus interface and optional monitoring
@@ -80,6 +82,7 @@ class CPU
         $this->flowControlHandler = new FlowControl($this);
         $this->stackHandler = new Stack($this);
         $this->flagsHandler = new Flags($this);
+        $this->illegalOpcodesHandler = new IllegalOpcodes($this);
 
         $this->initializeInstructionHandlers();
     }
@@ -442,6 +445,22 @@ class CPU
           'CLV' => fn (Opcode $opcode) => $this->flagsHandler->clv($opcode),
 
           'NOP' => fn (Opcode $opcode) => $this->nop($opcode),
+
+          // Illegal/undocumented opcodes
+          'ALR' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->alr($opcode),
+          'ANE' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->ane($opcode),
+          'ARR' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->arr($opcode),
+          'DCP' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->dcp($opcode),
+          'LAS' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->las($opcode),
+          'LAX' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->lax($opcode),
+          'LXA' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->lxa($opcode),
+          'RRA' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->rra($opcode),
+          'SBX' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->sbx($opcode),
+          'SHA' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->sha($opcode),
+          'SHS' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->shs($opcode),
+          'SHX' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->shx($opcode),
+          'SHY' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->shy($opcode),
+          'SRE' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->sre($opcode),
         ];
     }
 
