@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Andrewthecoder\MOS6502;
+namespace andrewthecoder\MOS6502;
 
 /**
  * Instruction Register

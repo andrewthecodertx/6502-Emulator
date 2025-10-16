@@ -8,7 +8,7 @@
     "retrocomputing",
     "PHP"
   ],
-  "homepage": "https://andrewthecoder.com",
+  "homepage": "https://andrewthecoder.com/MOS6502",
   "require-dev": {
     "phpunit/phpunit": "^12.3",
     "phpstan/phpstan": "^2.1"
@@ -16,15 +16,18 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "Andrewthecoder\\MOS6502\\": "src/",
-      "Andrewthecoder\\Tests\\": "tests/"
+      "andrewthecoder\\MOS6502\\": "src/",
+      "andrewthecoder\\Tests\\": "tests/"
     }
   },
   "authors": [
     {
       "name": "Andrew S Erwin",
-      "email": "andrewerwin73@mail.com"
+      "email": "andrewerwin73@mail.com",
+      "homepage": "https://andrewthecoder.com"
     }
   ],
-  "require": {}
+  "require": {
+    "php": ">=8.1"
+  }
 }

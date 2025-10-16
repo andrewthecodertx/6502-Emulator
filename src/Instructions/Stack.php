@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Andrewthecoder\MOS6502\Instructions;
+namespace andrewthecoder\MOS6502\Instructions;
 
-use Andrewthecoder\MOS6502\CPU;
-use Andrewthecoder\MOS6502\Opcode;
-use Andrewthecoder\MOS6502\StatusRegister;
+use andrewthecoder\MOS6502\CPU;
+use andrewthecoder\MOS6502\Opcode;
+use andrewthecoder\MOS6502\StatusRegister;
 
 class Stack
 {

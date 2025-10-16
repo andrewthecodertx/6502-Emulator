@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Andrewthecoder\MOS6502;
+namespace andrewthecoder\MOS6502;
 
-use Andrewthecoder\MOS6502\Instructions\LoadStore;
-use Andrewthecoder\MOS6502\Instructions\Transfer;
-use Andrewthecoder\MOS6502\Instructions\Arithmetic;
-use Andrewthecoder\MOS6502\Instructions\Logic;
-use Andrewthecoder\MOS6502\Instructions\ShiftRotate;
-use Andrewthecoder\MOS6502\Instructions\IncDec;
-use Andrewthecoder\MOS6502\Instructions\FlowControl;
-use Andrewthecoder\MOS6502\Instructions\Stack;
-use Andrewthecoder\MOS6502\Instructions\Flags;
-use Andrewthecoder\MOS6502\Instructions\IllegalOpcodes;
+use andrewthecoder\MOS6502\Instructions\LoadStore;
+use andrewthecoder\MOS6502\Instructions\Transfer;
+use andrewthecoder\MOS6502\Instructions\Arithmetic;
+use andrewthecoder\MOS6502\Instructions\Logic;
+use andrewthecoder\MOS6502\Instructions\ShiftRotate;
+use andrewthecoder\MOS6502\Instructions\IncDec;
+use andrewthecoder\MOS6502\Instructions\FlowControl;
+use andrewthecoder\MOS6502\Instructions\Stack;
+use andrewthecoder\MOS6502\Instructions\Flags;
+use andrewthecoder\MOS6502\Instructions\IllegalOpcodes;
 
 /**
  * 6502 CPU Emulator
