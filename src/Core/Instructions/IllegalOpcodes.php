@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Core\Instructions;
+namespace AndrewTheCoder\Emulator\Core\Instructions;
 
-use Emulator\Core\CPU;
-use Emulator\Core\Opcode;
-use Emulator\Core\StatusRegister;
+use AndrewTheCoder\Emulator\Core\CPU;
+use AndrewTheCoder\Emulator\Core\Opcode;
+use AndrewTheCoder\Emulator\Core\StatusRegister;
 
 /**
  * Illegal/undocumented 6502 opcodes

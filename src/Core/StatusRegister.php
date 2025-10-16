@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Core;
+namespace AndrewTheCoder\Emulator\Core;
 
 /**
  * 6502 Processor Status Register (P register).

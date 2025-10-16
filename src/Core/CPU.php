@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Emulator\Core;
+namespace AndrewTheCoder\Emulator\Core;
 
-use Emulator\Core\Instructions\LoadStore;
-use Emulator\Core\Instructions\Transfer;
-use Emulator\Core\Instructions\Arithmetic;
-use Emulator\Core\Instructions\Logic;
-use Emulator\Core\Instructions\ShiftRotate;
-use Emulator\Core\Instructions\IncDec;
-use Emulator\Core\Instructions\FlowControl;
-use Emulator\Core\Instructions\Stack;
-use Emulator\Core\Instructions\Flags;
-use Emulator\Core\Instructions\IllegalOpcodes;
+use AndrewTheCoder\Emulator\Core\Instructions\LoadStore;
+use AndrewTheCoder\Emulator\Core\Instructions\Transfer;
+use AndrewTheCoder\Emulator\Core\Instructions\Arithmetic;
+use AndrewTheCoder\Emulator\Core\Instructions\Logic;
+use AndrewTheCoder\Emulator\Core\Instructions\ShiftRotate;
+use AndrewTheCoder\Emulator\Core\Instructions\IncDec;
+use AndrewTheCoder\Emulator\Core\Instructions\FlowControl;
+use AndrewTheCoder\Emulator\Core\Instructions\Stack;
+use AndrewTheCoder\Emulator\Core\Instructions\Flags;
+use AndrewTheCoder\Emulator\Core\Instructions\IllegalOpcodes;
 
 /**
  * 6502 CPU Emulator
