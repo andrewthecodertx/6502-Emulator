@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AndrewTheCoder\Emulator\Core\Instructions;
+namespace Andrewthecoder\MOS6502\Instructions;
 
-use AndrewTheCoder\Emulator\Core\CPU;
-use AndrewTheCoder\Emulator\Core\Opcode;
-use AndrewTheCoder\Emulator\Core\StatusRegister;
+use Andrewthecoder\MOS6502\CPU;
+use Andrewthecoder\MOS6502\Opcode;
+use Andrewthecoder\MOS6502\StatusRegister;
 
 class FlowControl
 {
