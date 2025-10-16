@@ -229,10 +229,13 @@ class CPU
      */
     public function executeInstruction(): void
     {
-        $startingPC = $this->pc;
-        do {
+        // Always step at least once to fetch and begin instruction execution
+        $this->step();
+
+        // Continue stepping until all instruction cycles are consumed
+        while (!$this->halted && $this->cycles > 0) {
             $this->step();
-        } while (!$this->halted && ($this->cycles > 0 || $this->pc == $startingPC));
+        }
     }
 
     /**
@@ -285,11 +288,11 @@ class CPU
         $this->requestReset();
 
         if ($this->halted) {
-            $this->handleReset();
+            $this->handleReset(immediate: true);
         }
     }
 
-    private function handleReset(): void
+    private function handleReset(bool $immediate = false): void
     {
         if ($this->monitor !== null) {
             $this->monitor->clearLog();
@@ -300,7 +303,12 @@ class CPU
         // - SP decremented by 3
         // - PC loaded from reset vector (0xFFFC-0xFFFD)
         // - Status register: I=1, D=0, unused=1
-        $this->cycles += 7;
+
+        // Only add cycles if this is not an immediate reset (i.e., queued for later)
+        if (!$immediate) {
+            $this->cycles += 7;
+        }
+
         $this->sp = ($this->sp - 3) & 0xFF;
 
         $resetLow = $this->bus->read(0xFFFC);

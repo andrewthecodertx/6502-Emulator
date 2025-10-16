@@ -3,6 +3,13 @@
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
+         columns="max"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnWarning="false"
+         stopOnIncomplete="false"
+         stopOnRisky="false"
+         stopOnSkipped="false"
          displayDetailsOnIncompleteTests="true"
          displayDetailsOnSkippedTests="true"
          displayDetailsOnTestsThatTriggerDeprecations="true"
@@ -14,8 +21,11 @@
          failOnWarning="true"
          failOnIncomplete="true"
          failOnSkipped="false"
+         failOnRisky="false"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         enforceTimeLimit="false"
          cacheDirectory=".phpunit.cache"
          executionOrder="depends,defects"
          requireCoverageMetadata="false"
@@ -42,5 +52,7 @@
     <logging>
         <testdoxHtml outputFile="build/testdox.html"/>
         <testdoxText outputFile="build/testdox.txt"/>
+        <junit outputFile="build/junit.xml"/>
+        <teamcity outputFile="build/teamcity.txt"/>
     </logging>
 </phpunit>
