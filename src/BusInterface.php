@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AndrewTheCoder\Emulator\Core;
+namespace Andrewthecoder\MOS6502;
 
 /**
  * Bus interface that all system buses must implement.

@@ -1,25 +1,30 @@
 {
-    "name": "andrewthecoder/6502-emulator",
-    "description": "A 6502 microprocessor emulator written in PHP.",
-    "type": "library",
-    "keywords": ["6502", "emulator", "retrocomputing", "PHP"],
-    "homepage": "https://andrewthecoder.com",
-    "require-dev": {
-        "phpunit/phpunit": "^12.3",
-        "phpstan/phpstan": "^2.1"
-    },
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "AndrewTheCoder\\Emulator\\": "src/",
-            "AndrewTheCoder\\Tests\\": "tests/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Andrew S Erwin",
-            "email": "andrewerwin73@mail.com"
-        }
-    ],
-    "require": {}
+  "name": "andrewthecoder/6502-emulator",
+  "description": "A 6502 microprocessor emulator written in PHP.",
+  "type": "library",
+  "keywords": [
+    "6502",
+    "emulator",
+    "retrocomputing",
+    "PHP"
+  ],
+  "homepage": "https://andrewthecoder.com",
+  "require-dev": {
+    "phpunit/phpunit": "^12.3",
+    "phpstan/phpstan": "^2.1"
+  },
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Andrewthecoder\\MOS6502\\": "src/",
+      "Andrewthecoder\\Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Andrew S Erwin",
+      "email": "andrewerwin73@mail.com"
+    }
+  ],
+  "require": {}
 }

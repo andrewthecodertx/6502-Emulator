@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AndrewTheCoder\Emulator\Core;
+namespace Andrewthecoder\MOS6502;
 
 /**
  * JSON-Driven Instruction Interpreter

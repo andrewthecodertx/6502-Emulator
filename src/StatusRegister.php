@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AndrewTheCoder\Emulator\Core;
+namespace Andrewthecoder\MOS6502;
 
 /**
  * 6502 Processor Status Register (P register).
