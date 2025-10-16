@@ -1,13 +1,16 @@
 # PHP-6502: A 6502 Emulator in PHP
 
-A fully functional 6502 microprocessor emulator written entirely in PHP, with support
-for multiple system architectures. Features a reusable CPU core that can be paired
-with different system implementations including Ben Eater-style computers and the
-Commodore 64.
+A fully functional 6502 microprocessor emulator written entirely in PHP,
+packaged as a Composer library for building custom 6502-based systems. Features
+a reusable CPU core that can be paired with different system implementations.
 
-This project was heavily inspired by Ben Eater's fantastic YouTube series,
-["Build a 65c02-based computer from scratch"](https://www.youtube.com/playlist?list=PLowKtXNTBypFbtuVMUVXNR0z1mu7dp7eH).
-While Ben builds a physical computer, this project emulates one in software.
+## Installation
+
+Install via Composer:
+
+```bash
+composer require andrewthecoder/6502-emulator
+```
 
 ## Features
 
@@ -19,48 +22,73 @@ instruction processing
 * **Interrupt support** (NMI, IRQ, RESET) with proper edge/level triggering
 * **CPU monitoring** for debugging and profiling with instruction tracing and
 cycle counting
-* **Comprehensive PHPDoc documentation** for excellent IDE support
+* **Comprehensive PHPDoc documentation** for IDE support
 
-### System Implementations
+## Quick Start
 
-#### Eater System
+### Using the CPU in Your Project
 
-* RAM and ROM memory components with flexible loading mechanisms
-* Serial UART (6551 ACIA emulation) for interactive I/O
-* Video memory with 256x240 framebuffer and ANSI terminal rendering
-* 6522 VIA (Versatile Interface Adapter) with timers and interrupt control
-* PS/2-style keyboard controller with FIFO buffer
-* Four-channel sound controller
-* Memory-mapped peripheral architecture
+```php
+<?php
 
-#### Commodore 64 System (In Development)
+require 'vendor/autoload.php';
 
-* MOS 6510 CPU with banking support
-* VIC-II video chip emulation with sprite support and raster interrupts
-* SID 6581 sound chip with three voices and ADSR envelopes
-* CIA 6526 complex interface adapters (×2) with timers
-* Full C64 memory banking ($A000-$BFFF BASIC ROM, $D000-$DFFF I/O/CharROM,
-$E000-$FFFF KERNAL ROM)
-* Color RAM support
+use andrewthecoder\MOS6502\CPU;
+use andrewthecoder\MOS6502\BusInterface;
 
-### Additional Features
+// Implement a simple bus with 64KB RAM
+class SimpleBus implements BusInterface
+{
+    private array $memory = [];
 
-* **Ability to run assembled 6502 machine code**
-* **Wozmon monitor program** - classic Apple 1 monitor for memory inspection and
-code execution
-* **Graphics demo** with ANSI terminal rendering
-* **Extensible architecture** - easy to add new systems and peripherals
+    public function read(int $address): int
+    {
+        return $this->memory[$address & 0xFFFF] ?? 0;
+    }
 
-## Getting Started
+    public function write(int $address, int $value): void
+    {
+        $this->memory[$address & 0xFFFF] = $value & 0xFF;
+    }
 
-### Prerequisites
+    public function readWord(int $address): int
+    {
+        $low = $this->read($address);
+        $high = $this->read($address + 1);
+        return ($high << 8) | $low;
+    }
 
-* PHP 8.1 or higher
-* Composer for dependency management
-* `cc65` toolchain for assembling 6502 code. You can download it from the
-[official cc65 website](https://cc65.github.io/).
+    public function tick(): void
+    {
+        // Called after each CPU cycle
+    }
+}
 
-### Installation
+// Create CPU with your bus
+$bus = new SimpleBus();
+$cpu = new CPU($bus);
+
+// Load a simple program: LDA #$42, STA $00
+$bus->write(0x8000, 0xA9);  // LDA #$42
+$bus->write(0x8001, 0x42);
+$bus->write(0x8002, 0x85);  // STA $00
+$bus->write(0x8003, 0x00);
+
+// Set reset vector
+$bus->write(0xFFFC, 0x00);
+$bus->write(0xFFFD, 0x80);
+
+// Run
+$cpu->reset();
+$cpu->executeInstruction();
+$cpu->executeInstruction();
+
+echo sprintf("Value at $00: 0x%02X\n", $bus->read(0x00)); // 0x42
+```
+
+### Development Setup
+
+For developing this library itself or running the included examples:
 
 1. **Clone the repository:**
 
@@ -69,78 +97,23 @@ code execution
     cd 6502-Emulator
     ```
 
-2. **Install PHP dependencies:**
+2. **Install dependencies:**
 
     ```bash
     composer install
     ```
 
-### Assembling Programs
-
-The assembly source files are located in the `programs/` directory. A helper
-script is provided to assemble them.
-
-1. **Assemble the BIOS:**
-
-    ```bash
-    ./utilities/buildasm.sh bios.asm bios.cfg
-    ```
-
-2. **Assemble Wozmon:**
-
-    ```bash
-    ./utilities/buildasm.sh wozmon_uart.asm wozmon_uart.cfg
-    ```
-
-    Assembled binaries (`.bin` files) will be placed in the `roms/` directory.
-
-### Running the Emulator
-
-#### Eater System
-
-You can run any assembled program using the `loadbin.php` script located in `src/Systems/Eater/examples/`.
-
-1. **Run the BIOS:**
-    The BIOS will perform a quick memory test and then wait for you to enter a
-    memory address to jump to.
-
-    ```bash
-    php src/Systems/Eater/examples/loadbin.php bios.bin
-    ```
-
-2. **Run Wozmon:**
-    Wozmon provides a simple monitor program that allows you to inspect memory
-    and execute code.
-
-    ```bash
-    php src/Systems/Eater/examples/loadbin.php wozmon_uart.bin
-    ```
-
-    Once Wozmon starts, you can interact with it. For example, to view the
-    contents of memory starting at address `$C000`, you would type `C000.C00F`
-    and press Enter.
-
-3. **Run the Graphics Demo:**
-    A demonstration of the ANSI terminal rendering system.
-
-    ```bash
-    php src/Systems/Eater/programs/graphics_demo.php
-    ```
-
-#### Commodore 64 System
-
-The C64 system is currently in development. Basic system example:
-
-```bash
-php src/Systems/C64/examples/basic_system.php
-```
+3. **Optional: Install cc65 toolchain** for assembling 6502 programs:
+Download from [official cc65 website](https://cc65.github.io/) and place `ca65`
+and `ld65` in `bin/`
 
 ## Architecture
 
-The emulator uses a modular, reusable architecture that separates the core CPU
-from system-specific implementations.
+The emulator uses a modular, reusable architecture designed for Composer integration.
 
-### Core Components (`src/Core/`)
+### Core Components (`andrewthecoder\MOS6502` namespace)
+
+The reusable CPU core in `src/`:
 
 * **CPU** - The main 6502 processor with all registers, addressing modes, and
 instruction execution
@@ -154,16 +127,16 @@ metadata (78% of opcodes)
 * **Instructions/** - Custom handlers for complex opcodes (arithmetic with
 overflow, branches, stack ops)
 
-### System-Specific Components (`src/Systems/`)
+### Building Your Own System
 
-Each system implements `BusInterface` and provides its own memory map and
-peripherals:
+To create a custom 6502 system:
 
-* **Eater/** - Ben Eater-style computer with UART, video, and I/O peripherals
-* **C64/** - Commodore 64 with VIC-II, SID, CIA chips and memory banking
+1. Install the package via Composer
+2. Implement `BusInterface` with your desired memory map
+3. Attach peripherals as needed
+4. Instantiate `CPU` with your bus
 
-See `docs/CPU_CORE_ARCHITECTURE.md` for detailed information on building new
-systems.
+See `docs/CPU_CORE_ARCHITECTURE.md` for detailed instructions and examples.
 
 ## Development
 
@@ -188,61 +161,96 @@ PHPStan is used for static analysis. To check the codebase:
 * **Comprehensive PHPDoc** - All public methods and classes are fully documented
 * **Type Safety** - Strict typing throughout with detailed array type annotations
 * **Test Coverage** - 56 tests covering CPU operations, addressing modes, and
-peripherals
-* **CLAUDE.md** - Project-specific guidance for AI assistants
+peripherals (coming soon)
 
 ## Project Structure
 
 ```
-src/
-├── Core/                        # Reusable 6502 CPU core
-│   ├── CPU.php                 # Main CPU emulator
-│   ├── BusInterface.php        # Bus abstraction
-│   ├── InstructionRegister.php # Opcode registry
-│   ├── InstructionInterpreter.php # JSON-driven execution
-│   ├── StatusRegister.php      # CPU flags
-│   ├── Opcode.php              # Opcode metadata
-│   ├── CPUMonitor.php          # Debugging tool
-│   ├── opcodes.json            # Opcode definitions
-│   └── Instructions/           # Complex instruction handlers
+src/                            # andrewthecoder\MOS6502 namespace
+├── CPU.php                     # Main CPU emulator
+├── BusInterface.php            # Bus abstraction
+├── InstructionRegister.php     # Opcode registry
+├── InstructionInterpreter.php  # JSON-driven execution
+├── StatusRegister.php          # CPU flags
+├── Opcode.php                  # Opcode metadata
+├── CPUMonitor.php              # Debugging tool
+├── opcodes.json                # Complete opcode definitions
+├── Instructions/               # Complex instruction handlers
+│   ├── Arithmetic.php          # ADC, SBC with overflow
+│   ├── ShiftRotate.php         # ASL, LSR, ROL, ROR
+│   ├── FlowControl.php         # Branches and jumps
+│   ├── Stack.php               # Stack operations
+│   └── ...                     # Other handlers
 │
-└── Systems/
-    ├── Eater/               # Ben Eater-style system
-    │   ├── Bus/
-    │   │   ├── SystemBus.php   # Memory-mapped I/O bus
-    │   │   └── PeripheralInterface.php
-    │   ├── RAM.php             # System RAM
-    │   ├── ROM.php             # System ROM
-    │   ├── UART.php            # Serial I/O
-    │   ├── VideoMemory.php     # Framebuffer
-    │   ├── ANSIRenderer.php    # Terminal graphics
-    │   ├── ConsoleIO.php       # Console utilities
-    │   ├── Peripherals/        # I/O peripherals
-    │   │   ├── VIA.php         # 6522 VIA
-    │   │   ├── KeyboardController.php
-    │   │   ├── SoundController.php
-    │   │   └── Serial.php
-    │   └── programs/           # Example programs
-    │
-    └── C64/                    # Commodore 64 system
-        ├── Bus/
-        │   ├── C64Bus.php      # C64 memory banking
-        │   └── PeripheralInterface.php
-        ├── MOS6510.php         # C64 CPU variant
-        └── Peripherals/        # C64 chips
-            ├── VICII.php       # Video chip
-            ├── CIA6526.php     # I/O chip (×2)
-            └── SID6581.php     # Sound chip
 ```
 
-## Future Plans
+## Using in External Projects
 
-* **Complete Commodore 64 implementation** with full BASIC and KERNAL support
-* **Apple II system** - Another classic 6502-based computer
-* **NES emulation** - Nintendo Entertainment System support
-* **Cycle-accurate timing** for more precise emulation
-* **Performance optimizations** - JIT compilation, opcode caching
-* **Web interface** - Browser-based emulator with canvas rendering
+After installing via Composer, you can use the CPU core to build any 6502-based system:
+
+### Minimal Example
+
+```php
+<?php
+
+use andrewthecoder\MOS6502\CPU;
+use andrewthecoder\MOS6502\BusInterface;
+
+class MyBus implements BusInterface {
+    private array $ram = [];
+
+    public function read(int $address): int {
+        return $this->ram[$address & 0xFFFF] ?? 0;
+    }
+
+    public function write(int $address, int $value): void {
+        $this->ram[$address & 0xFFFF] = $value & 0xFF;
+    }
+
+    public function readWord(int $address): int {
+        return $this->read($address) | ($this->read($address + 1) << 8);
+    }
+
+    public function tick(): void {
+        // Update peripherals, check interrupts, etc.
+    }
+}
+
+$cpu = new CPU(new MyBus());
+$cpu->reset();
+```
+
+### Advanced: Memory-Mapped Peripherals
+
+```php
+<?php
+
+class MyBus implements BusInterface {
+    private RAM $ram;
+    private ROM $rom;
+    private array $peripherals = [];
+
+    public function addPeripheral(PeripheralInterface $peripheral): void {
+        $this->peripherals[] = $peripheral;
+    }
+
+    public function read(int $address): int {
+        // Check peripherals first
+        foreach ($this->peripherals as $peripheral) {
+            if ($peripheral->handlesAddress($address)) {
+                return $peripheral->read($address);
+            }
+        }
+
+        // Fall through to RAM/ROM
+        return $address < 0x8000
+            ? $this->ram->read($address)
+            : $this->rom->read($address);
+    }
+
+    // ... write(), readWord(), tick() implementations
+}
+```
 
 ## Contributing
 
@@ -252,13 +260,13 @@ Contributions are welcome! The modular architecture makes it easy to:
 * Implement additional peripherals
 * Improve emulation accuracy
 * Add more test coverage
+* Enhance the hybrid JSON/PHP execution model
 
 ## License
 
-This project is open source. See the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/andrewthecodertx/6502-Emulator/blob/main/LICENSE) file for details.
 
 ## Acknowledgments
 
-* **Ben Eater** - For the excellent YouTube series that inspired this project
 * **6502.org** - For comprehensive 6502 documentation
 * **cc65 project** - For the assembler and toolchain
