@@ -27,7 +27,7 @@ use Emulator\Bus\SystemBus;
 
 // 1. Create memory components
 $rom = new ROM(null);
-$rom->loadBinaryROM('roms/bios.bin');
+$rom->loadFromFile('roms/bios.bin');
 $ram = new RAM();
 
 // 2. Create and configure the system bus
@@ -140,7 +140,7 @@ $ram->writeByte(0x0000, 0xFF);
 
 // ROM access (read-only)
 $rom->readByte(0x8000);
-$rom->loadBinaryROM('program.bin');    // Load new ROM image
+$rom->loadFromFile('program.bin');    // Load new ROM image
 
 // Multiple ROM loading with metadata
 $rom->loadFromDirectory('roms/');      // Load all ROMs from directory
@@ -307,12 +307,8 @@ $instructionRegister = $cpu->getInstructionRegister();
 $rom = new ROM('roms/');              // Auto-load from directory
 // Loads all .json/.bin pairs in priority order
 
-// Manual ROM loading
-$rom->loadROM([
-    0x8000 => 0xA9,  // LDA #$42
-    0x8001 => 0x42,
-    0x8002 => 0x00   // BRK
-]);
+// Loading from a specific file with custom address
+$rom->loadFromFile('program.bin', 0xC000);  // Load at custom address
 ```
 
 ### System Reset and State
