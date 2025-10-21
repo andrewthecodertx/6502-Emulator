@@ -149,14 +149,16 @@ class InstructionInterpreter
         $flagConstant = match ($flag) {
             'CARRY' => StatusRegister::CARRY,
             'ZERO' => StatusRegister::ZERO,
-            'INTERRUPT_DISABLE' => StatusRegister::INTERRUPT_DISABLE,
-            'DECIMAL_MODE' => StatusRegister::DECIMAL_MODE,
+            'INTERRUPT', 'INTERRUPT_DISABLE' => StatusRegister::INTERRUPT_DISABLE,
+            'DECIMAL', 'DECIMAL_MODE' => StatusRegister::DECIMAL_MODE,
             'OVERFLOW' => StatusRegister::OVERFLOW,
             'NEGATIVE' => StatusRegister::NEGATIVE,
             default => throw new \RuntimeException("Unknown flag: {$flag}")
         };
 
-        $this->cpu->status->set($flagConstant, $value);
+        // Convert value to boolean
+        $boolValue = is_bool($value) ? $value : ($value !== 0);
+        $this->cpu->status->set($flagConstant, $boolValue);
     }
 
     /**

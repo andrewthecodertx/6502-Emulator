@@ -14,13 +14,26 @@ use andrewthecoder\MOS6502\Instructions\FlowControl;
 use andrewthecoder\MOS6502\Instructions\Stack;
 use andrewthecoder\MOS6502\Instructions\Flags;
 use andrewthecoder\MOS6502\Instructions\IllegalOpcodes;
+use andrewthecoder\MOS6502\Instructions\CMOS65C02;
 
 /**
- * 6502 CPU Emulator
+ * W65C02S CPU Emulator
  *
- * Implements a fully functional 6502 microprocessor with support for all standard
- * opcodes, addressing modes, interrupts (NMI, IRQ, RESET), and a hybrid execution
- * model combining JSON-driven and custom handler-based instruction processing.
+ * Implements a fully functional WDC 65C02 CMOS microprocessor with support for all
+ * standard opcodes (including 65C02-specific instructions like BRA, STZ, TRB, TSB,
+ * WAI, STP, and bit manipulation), addressing modes, interrupts (NMI, IRQ, RESET),
+ * and a hybrid execution model combining JSON-driven and custom handler-based
+ * instruction processing.
+ *
+ * Key differences from NMOS 6502:
+ * - New instructions: BRA, PHX, PHY, PLX, PLY, STZ, TRB, TSB, WAI, STP
+ * - Bit manipulation: BBR0-7, BBS0-7, RMB0-7, SMB0-7
+ * - New addressing modes: Zero Page Indirect (zp), Absolute Indexed Indirect (a,x)
+ * - All illegal opcodes replaced with NOPs
+ * - Fixed JMP indirect page boundary bug
+ * - Proper decimal mode flag handling
+ *
+ * @package andrewthecoder\MOS6502
  */
 class CPU
 {
@@ -32,6 +45,7 @@ class CPU
     public int $cycles = 0;
 
     public bool $halted = false;
+    public bool $waiting = false;  // 65C02 WAI instruction state
 
     /** @var array<int, string> */
     private array $pcTrace = [];
@@ -57,6 +71,7 @@ class CPU
     private readonly Stack $stackHandler;
     private readonly Flags $flagsHandler;
     private readonly IllegalOpcodes $illegalOpcodesHandler;
+    private readonly CMOS65C02 $cmos65c02Handler;
 
     /**
      * Initializes the CPU with a bus interface and optional monitoring
@@ -83,6 +98,7 @@ class CPU
         $this->stackHandler = new Stack($this);
         $this->flagsHandler = new Flags($this);
         $this->illegalOpcodesHandler = new IllegalOpcodes($this);
+        $this->cmos65c02Handler = new CMOS65C02($this);
 
         $this->initializeInstructionHandlers();
     }
@@ -258,6 +274,24 @@ class CPU
     }
 
     /**
+     * Sets the CPU waiting state (65C02 WAI instruction)
+     *
+     * @param bool $waiting True to enter wait state, false to exit
+     */
+    public function setWaiting(bool $waiting): void
+    {
+        $this->waiting = $waiting;
+    }
+
+    /**
+     * Checks if the CPU is in waiting state (65C02 WAI)
+     */
+    public function isWaiting(): bool
+    {
+        return $this->waiting;
+    }
+
+    /**
      * Checks if the CPU is currently halted
      *
      * @return bool True if halted, false otherwise
@@ -338,6 +372,9 @@ class CPU
         // 5. Set I flag (though NMI cannot be masked)
         // 6. Load PC from NMI vector (0xFFFA-0xFFFB)
 
+        // Clear WAI state - interrupts wake the CPU from WAI
+        $this->waiting = false;
+
         $this->pushByte(($this->pc >> 8) & 0xFF);
         $this->pushByte($this->pc & 0xFF);
 
@@ -362,6 +399,9 @@ class CPU
         // 4. Push status register to stack
         // 5. Set I flag to disable further IRQs
         // 6. Load PC from IRQ vector (0xFFFE-0xFFFF)
+
+        // Clear WAI state - interrupts wake the CPU from WAI
+        $this->waiting = false;
 
         $this->pushByte(($this->pc >> 8) & 0xFF);
         $this->pushByte($this->pc & 0xFF);
@@ -443,6 +483,10 @@ class CPU
           'PLA' => fn (Opcode $opcode) => $this->stackHandler->pla($opcode),
           'PHP' => fn (Opcode $opcode) => $this->stackHandler->php($opcode),
           'PLP' => fn (Opcode $opcode) => $this->stackHandler->plp($opcode),
+          'PHX' => fn (Opcode $opcode) => $this->stackHandler->phx($opcode),
+          'PHY' => fn (Opcode $opcode) => $this->stackHandler->phy($opcode),
+          'PLX' => fn (Opcode $opcode) => $this->stackHandler->plx($opcode),
+          'PLY' => fn (Opcode $opcode) => $this->stackHandler->ply($opcode),
 
           'SEC' => fn (Opcode $opcode) => $this->flagsHandler->sec($opcode),
           'CLC' => fn (Opcode $opcode) => $this->flagsHandler->clc($opcode),
@@ -451,6 +495,54 @@ class CPU
           'SED' => fn (Opcode $opcode) => $this->flagsHandler->sed($opcode),
           'CLD' => fn (Opcode $opcode) => $this->flagsHandler->cld($opcode),
           'CLV' => fn (Opcode $opcode) => $this->flagsHandler->clv($opcode),
+
+          // 65C02 CMOS-specific instructions
+          'BRA' => fn (Opcode $opcode) => $this->cmos65c02Handler->bra($opcode),
+          'STZ' => fn (Opcode $opcode) => $this->cmos65c02Handler->stz($opcode),
+          'TRB' => fn (Opcode $opcode) => $this->cmos65c02Handler->trb($opcode),
+          'TSB' => fn (Opcode $opcode) => $this->cmos65c02Handler->tsb($opcode),
+          'WAI' => fn (Opcode $opcode) => $this->cmos65c02Handler->wai($opcode),
+          'STP' => fn (Opcode $opcode) => $this->cmos65c02Handler->stp($opcode),
+
+          // BBR0-7 - Branch on Bit Reset
+          'BBR0' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr0($opcode),
+          'BBR1' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr1($opcode),
+          'BBR2' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr2($opcode),
+          'BBR3' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr3($opcode),
+          'BBR4' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr4($opcode),
+          'BBR5' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr5($opcode),
+          'BBR6' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr6($opcode),
+          'BBR7' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr7($opcode),
+
+          // BBS0-7 - Branch on Bit Set
+          'BBS0' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs0($opcode),
+          'BBS1' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs1($opcode),
+          'BBS2' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs2($opcode),
+          'BBS3' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs3($opcode),
+          'BBS4' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs4($opcode),
+          'BBS5' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs5($opcode),
+          'BBS6' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs6($opcode),
+          'BBS7' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs7($opcode),
+
+          // RMB0-7 - Reset Memory Bit
+          'RMB0' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb0($opcode),
+          'RMB1' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb1($opcode),
+          'RMB2' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb2($opcode),
+          'RMB3' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb3($opcode),
+          'RMB4' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb4($opcode),
+          'RMB5' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb5($opcode),
+          'RMB6' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb6($opcode),
+          'RMB7' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb7($opcode),
+
+          // SMB0-7 - Set Memory Bit
+          'SMB0' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb0($opcode),
+          'SMB1' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb1($opcode),
+          'SMB2' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb2($opcode),
+          'SMB3' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb3($opcode),
+          'SMB4' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb4($opcode),
+          'SMB5' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb5($opcode),
+          'SMB6' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb6($opcode),
+          'SMB7' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb7($opcode),
 
           'NOP' => fn (Opcode $opcode) => $this->nop($opcode),
 
@@ -643,17 +735,20 @@ class CPU
         return match ($addressingMode) {
             'Immediate' => $this->immediate(),
             'Zero Page' => $this->zeroPage(),
-            'X-Indexed Zero Page' => $this->zeroPageX(),
-            'Y-Indexed Zero Page' => $this->zeroPageY(),
+            'X-Indexed Zero Page', 'Zero Page Indexed with X' => $this->zeroPageX(),
+            'Y-Indexed Zero Page', 'Zero Page Indexed with Y' => $this->zeroPageY(),
             'Absolute' => $this->absolute(),
-            'X-Indexed Absolute' => $this->absoluteX(),
-            'Y-Indexed Absolute' => $this->absoluteY(),
-            'X-Indexed Zero Page Indirect' => $this->indirectX(),
-            'Zero Page Indirect Y-Indexed' => $this->indirectY(),
+            'X-Indexed Absolute', 'Absolute Indexed with X' => $this->absoluteX(),
+            'Y-Indexed Absolute', 'Absolute Indexed with Y' => $this->absoluteY(),
+            'X-Indexed Zero Page Indirect', 'Zero Page Indexed Indirect' => $this->indirectX(),
+            'Zero Page Indirect Y-Indexed', 'Zero Page Indirect Indexed with Y' => $this->indirectY(),
             'Absolute Indirect' => $this->absoluteIndirect(),
-            'Relative' => $this->relative(),
+            'Relative', 'Program Counter Relative' => $this->relative(),
             'Implied' => $this->implied(),
             'Accumulator' => $this->accumulator(),
+            'Zero Page Indirect' => $this->zeroPageIndirect(),  // New 65C02 addressing mode
+            'Absolute Indexed Indirect' => $this->absoluteIndexedIndirect(),  // New 65C02 addressing mode
+            'Stack' => 0,  // Stack operations don't use getAddress
             default => throw new \InvalidArgumentException("Invalid addressing mode: {$addressingMode}"),
         };
     }
@@ -745,14 +840,44 @@ class CPU
         $this->pc++;
         $indirectAddress = ($high << 8) | $low;
 
-        if (($indirectAddress & 0xFF) == 0xFF) {
-            $targetLow = $this->bus->read($indirectAddress);
-            $targetHigh = $this->bus->read($indirectAddress & 0xFF00);
+        // 65C02 fix: Page boundary bug is fixed - always read from consecutive addresses
+        return $this->bus->readWord($indirectAddress);
+    }
 
-            return ($targetHigh << 8) | $targetLow;
-        } else {
-            return $this->bus->readWord($indirectAddress);
-        }
+    /**
+     * Zero Page Indirect addressing mode (65C02)
+     * Format: (zp)
+     * The zero page address contains a pointer to the effective address
+     */
+    private function zeroPageIndirect(): int
+    {
+        $zpAddress = $this->bus->read($this->pc);
+        $this->pc++;
+
+        // Read the 16-bit address from zero page
+        $low = $this->bus->read($zpAddress);
+        $high = $this->bus->read(($zpAddress + 1) & 0xFF);
+
+        return ($high << 8) | $low;
+    }
+
+    /**
+     * Absolute Indexed Indirect addressing mode (65C02)
+     * Format: (a,x)
+     * Used by JMP instruction - adds X to absolute address, then uses result as pointer
+     */
+    private function absoluteIndexedIndirect(): int
+    {
+        $low = $this->bus->read($this->pc);
+        $this->pc++;
+        $high = $this->bus->read($this->pc);
+        $this->pc++;
+
+        // Add X register to the absolute address
+        $indirectAddress = ((($high << 8) | $low) + $this->registerX) & 0xFFFF;
+
+        // Read the target address from the indirect address
+        return $this->bus->readWord($indirectAddress);
     }
 
     private function relative(): int
