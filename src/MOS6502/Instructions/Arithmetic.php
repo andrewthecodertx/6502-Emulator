@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace andrewthecoder\MOS6502\Instructions;
 
 use andrewthecoder\MOS6502\CPU;
-use andrewthecoder\MOS6502\Opcode;
-use andrewthecoder\MOS6502\StatusRegister;
+use andrewthecoder\Core\Opcode;
+use andrewthecoder\Core\StatusRegister;
 
 class Arithmetic
 {

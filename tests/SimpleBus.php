@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace andrewthecoder\Tests;
 
-use andrewthecoder\MOS6502\BusInterface;
+use andrewthecoder\Core\BusInterface;
 
 /**
  * Simple memory bus for testing

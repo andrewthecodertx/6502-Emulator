@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace andrewthecoder\MOS6502;
 
+use andrewthecoder\Core\Opcode;
+use andrewthecoder\Core\StatusRegister;
 /**
  * JSON-Driven Instruction Interpreter
  *

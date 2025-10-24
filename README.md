@@ -2,7 +2,7 @@
 
 A fully functional 6502 microprocessor emulator written entirely in PHP,
 packaged as a Composer library for building custom 6502-based systems. Features
-a reusable CPU core that can be paired with different system implementations.
+two CPU cores (NMOS 6502 and WDC 65C02) that can be paired with different system implementations.
 
 ## Installation
 
@@ -14,14 +14,13 @@ composer require andrewthecoder/6502-emulator
 
 ## Features
 
-### Core CPU Emulator
+### Dual CPU Core Support
 
-* **Complete 6502 CPU implementation** with all standard opcodes and addressing modes
-* **Hybrid execution model** combining JSON-driven and custom handler-based
-instruction processing
+* **MOS 6502 (NMOS)** - Original MOS Technology 6502 with 56 documented instructions and illegal opcodes
+* **WDC 65C02 (CMOS)** - Western Design Center 65C02 with 70 instructions including BRA, STZ, PHX/PHY, bit manipulation, and more
+* **Hybrid execution model** combining JSON-driven and custom handler-based instruction processing
 * **Interrupt support** (NMI, IRQ, RESET) with proper edge/level triggering
-* **CPU monitoring** for debugging and profiling with instruction tracing and
-cycle counting
+* **CPU monitoring** for debugging and profiling with instruction tracing and cycle counting
 * **Comprehensive PHPDoc documentation** for IDE support
 
 ## Quick Start
@@ -33,8 +32,14 @@ cycle counting
 
 require 'vendor/autoload.php';
 
+// Choose your CPU variant:
+// For NMOS 6502 (original):
 use andrewthecoder\MOS6502\CPU;
 use andrewthecoder\MOS6502\BusInterface;
+
+// OR for WDC 65C02 (CMOS with additional instructions):
+// use andrewthecoder\WDC65C02\CPU;
+// use andrewthecoder\WDC65C02\BusInterface;
 
 // Implement a simple bus with 64KB RAM
 class SimpleBus implements BusInterface
@@ -109,32 +114,45 @@ and `ld65` in `bin/`
 
 ## Architecture
 
-The emulator uses a modular, reusable architecture designed for Composer integration.
+The emulator uses a modular, reusable architecture designed for Composer integration with two separate CPU cores.
 
-### Core Components (`andrewthecoder\MOS6502` namespace)
+### Core Components
 
-The reusable CPU core in `src/`:
+The emulator provides two complete CPU implementations:
 
-* **CPU** - The main 6502 processor with all registers, addressing modes, and
-instruction execution
+**`andrewthecoder\MOS6502` namespace** - Original NMOS 6502:
+* **CPU** - MOS Technology 6502 (NMOS) with 56 documented instructions
+* Includes illegal/undocumented opcodes
+* JMP indirect has page boundary bug (hardware-accurate)
+* Decimal mode doesn't set N, V, Z flags (hardware-accurate)
+
+**`andrewthecoder\WDC65C02` namespace** - CMOS 65C02:
+* **CPU** - WDC 65C02S with 70 instructions
+* Additional instructions: BRA, STZ, PHX/PHY/PLX/PLY, TRB/TSB, WAI/STP
+* Bit manipulation: BBR/BBS, RMB/SMB instructions
+* Fixed JMP indirect page boundary bug
+* Proper decimal mode flag handling
+
+**Shared interfaces (in both namespaces):**
 * **BusInterface** - Abstraction for system buses to implement memory-mapped I/O
-* **InstructionRegister** - Loads and provides access to opcode definitions from
-`opcodes.json`
-* **InstructionInterpreter** - Executes instructions using declarative JSON
-metadata (78% of opcodes)
+* **RAMInterface** - Contract for RAM implementations
+* **ROMInterface** - Contract for ROM implementations
+* **PeripheralInterface** - Contract for memory-mapped peripherals
+* **InstructionRegister** - Loads and provides access to opcode definitions from `opcodes.json`
+* **InstructionInterpreter** - Executes instructions using declarative JSON metadata
 * **StatusRegister** - Manages the 8 CPU status flags (NV-BDIZC)
 * **CPUMonitor** - Optional debugging and profiling tool
-* **Instructions/** - Custom handlers for complex opcodes (arithmetic with
-overflow, branches, stack ops)
+* **Instructions/** - Custom handlers for complex opcodes
 
 ### Building Your Own System
 
 To create a custom 6502 system:
 
 1. Install the package via Composer
-2. Implement `BusInterface` with your desired memory map
-3. Attach peripherals as needed
-4. Instantiate `CPU` with your bus
+2. Choose your CPU variant (MOS6502 or WDC65C02)
+3. Implement `BusInterface` with your desired memory map
+4. Optionally implement `RAMInterface`, `ROMInterface`, and `PeripheralInterface`
+5. Instantiate `CPU` with your bus
 
 See `docs/CPU_CORE_ARCHITECTURE.md` for detailed instructions and examples.
 

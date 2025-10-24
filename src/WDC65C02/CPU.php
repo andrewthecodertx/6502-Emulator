@@ -2,19 +2,21 @@
 
 declare(strict_types=1);
 
-namespace andrewthecoder\MOS6502;
+namespace andrewthecoder\WDC65C02;
 
-use andrewthecoder\MOS6502\Instructions\LoadStore;
-use andrewthecoder\MOS6502\Instructions\Transfer;
-use andrewthecoder\MOS6502\Instructions\Arithmetic;
-use andrewthecoder\MOS6502\Instructions\Logic;
-use andrewthecoder\MOS6502\Instructions\ShiftRotate;
-use andrewthecoder\MOS6502\Instructions\IncDec;
-use andrewthecoder\MOS6502\Instructions\FlowControl;
-use andrewthecoder\MOS6502\Instructions\Stack;
-use andrewthecoder\MOS6502\Instructions\Flags;
-use andrewthecoder\MOS6502\Instructions\IllegalOpcodes;
-use andrewthecoder\MOS6502\Instructions\CMOS65C02;
+use andrewthecoder\Core\BusInterface;
+use andrewthecoder\Core\StatusRegister;
+use andrewthecoder\WDC65C02\Instructions\LoadStore;
+use andrewthecoder\WDC65C02\Instructions\Transfer;
+use andrewthecoder\WDC65C02\Instructions\Arithmetic;
+use andrewthecoder\WDC65C02\Instructions\Logic;
+use andrewthecoder\WDC65C02\Instructions\ShiftRotate;
+use andrewthecoder\WDC65C02\Instructions\IncDec;
+use andrewthecoder\WDC65C02\Instructions\FlowControl;
+use andrewthecoder\WDC65C02\Instructions\Stack;
+use andrewthecoder\WDC65C02\Instructions\Flags;
+use andrewthecoder\WDC65C02\Instructions\IllegalOpcodes;
+use andrewthecoder\WDC65C02\Instructions\CMOS65C02;
 
 /**
  * W65C02S CPU Emulator
@@ -57,7 +59,7 @@ class CPU
     private bool $running = true;
     private bool $autoTickBus = true;
 
-    /** @var array<string, callable(Opcode): int> */
+    /** @var array<string, callable(\andrewthecoder\Core\Opcode): int> */
     private array $instructionHandlers = [];
 
     private readonly InstructionInterpreter $interpreter;
@@ -422,145 +424,145 @@ class CPU
     private function initializeInstructionHandlers(): void
     {
         $this->instructionHandlers = [
-          'LDA' => fn (Opcode $opcode) => $this->loadStoreHandler->lda($opcode),
-          'LDX' => fn (Opcode $opcode) => $this->loadStoreHandler->ldx($opcode),
-          'LDY' => fn (Opcode $opcode) => $this->loadStoreHandler->ldy($opcode),
-          'STA' => fn (Opcode $opcode) => $this->loadStoreHandler->sta($opcode),
-          'SAX' => fn (Opcode $opcode) => $this->loadStoreHandler->sax($opcode),
-          'STX' => fn (Opcode $opcode) => $this->loadStoreHandler->stx($opcode),
-          'STY' => fn (Opcode $opcode) => $this->loadStoreHandler->sty($opcode),
+          'LDA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->loadStoreHandler->lda($opcode),
+          'LDX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->loadStoreHandler->ldx($opcode),
+          'LDY' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->loadStoreHandler->ldy($opcode),
+          'STA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->loadStoreHandler->sta($opcode),
+          'SAX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->loadStoreHandler->sax($opcode),
+          'STX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->loadStoreHandler->stx($opcode),
+          'STY' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->loadStoreHandler->sty($opcode),
 
-          'TAX' => fn (Opcode $opcode) => $this->transferHandler->tax($opcode),
-          'TAY' => fn (Opcode $opcode) => $this->transferHandler->tay($opcode),
-          'TXA' => fn (Opcode $opcode) => $this->transferHandler->txa($opcode),
-          'TYA' => fn (Opcode $opcode) => $this->transferHandler->tya($opcode),
-          'TSX' => fn (Opcode $opcode) => $this->transferHandler->tsx($opcode),
-          'TXS' => fn (Opcode $opcode) => $this->transferHandler->txs($opcode),
+          'TAX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->transferHandler->tax($opcode),
+          'TAY' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->transferHandler->tay($opcode),
+          'TXA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->transferHandler->txa($opcode),
+          'TYA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->transferHandler->tya($opcode),
+          'TSX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->transferHandler->tsx($opcode),
+          'TXS' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->transferHandler->txs($opcode),
 
-          'ADC' => fn (Opcode $opcode) => $this->arithmeticHandler->adc($opcode),
-          'SBC' => fn (Opcode $opcode) => $this->arithmeticHandler->sbc($opcode),
-          'CMP' => fn (Opcode $opcode) => $this->arithmeticHandler->cmp($opcode),
-          'CPX' => fn (Opcode $opcode) => $this->arithmeticHandler->cpx($opcode),
-          'CPY' => fn (Opcode $opcode) => $this->arithmeticHandler->cpy($opcode),
+          'ADC' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->arithmeticHandler->adc($opcode),
+          'SBC' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->arithmeticHandler->sbc($opcode),
+          'CMP' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->arithmeticHandler->cmp($opcode),
+          'CPX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->arithmeticHandler->cpx($opcode),
+          'CPY' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->arithmeticHandler->cpy($opcode),
 
-          'AND' => fn (Opcode $opcode) => $this->logicHandler->and($opcode),
-          'ORA' => fn (Opcode $opcode) => $this->logicHandler->ora($opcode),
-          'EOR' => fn (Opcode $opcode) => $this->logicHandler->eor($opcode),
-          'BIT' => fn (Opcode $opcode) => $this->logicHandler->bit($opcode),
-          'ANC' => fn (Opcode $opcode) => $this->logicHandler->anc($opcode),
+          'AND' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->logicHandler->and($opcode),
+          'ORA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->logicHandler->ora($opcode),
+          'EOR' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->logicHandler->eor($opcode),
+          'BIT' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->logicHandler->bit($opcode),
+          'ANC' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->logicHandler->anc($opcode),
 
-          'ASL' => fn (Opcode $opcode) => $this->shiftRotateHandler->asl($opcode),
-          'LSR' => fn (Opcode $opcode) => $this->shiftRotateHandler->lsr($opcode),
-          'ROL' => fn (Opcode $opcode) => $this->shiftRotateHandler->rol($opcode),
-          'ROR' => fn (Opcode $opcode) => $this->shiftRotateHandler->ror($opcode),
-          'RLA' => fn (Opcode $opcode) => $this->shiftRotateHandler->rla($opcode),
-          'SLO' => fn (Opcode $opcode) => $this->shiftRotateHandler->slo($opcode),
+          'ASL' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->shiftRotateHandler->asl($opcode),
+          'LSR' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->shiftRotateHandler->lsr($opcode),
+          'ROL' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->shiftRotateHandler->rol($opcode),
+          'ROR' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->shiftRotateHandler->ror($opcode),
+          'RLA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->shiftRotateHandler->rla($opcode),
+          'SLO' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->shiftRotateHandler->slo($opcode),
 
-          'INC' => fn (Opcode $opcode) => $this->incDecHandler->inc($opcode),
-          'DEC' => fn (Opcode $opcode) => $this->incDecHandler->dec($opcode),
-          'INX' => fn (Opcode $opcode) => $this->incDecHandler->inx($opcode),
-          'DEX' => fn (Opcode $opcode) => $this->incDecHandler->dex($opcode),
-          'INY' => fn (Opcode $opcode) => $this->incDecHandler->iny($opcode),
-          'DEY' => fn (Opcode $opcode) => $this->incDecHandler->dey($opcode),
-          'ISC' => fn (Opcode $opcode) => $this->incDecHandler->isc($opcode),
+          'INC' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->incDecHandler->inc($opcode),
+          'DEC' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->incDecHandler->dec($opcode),
+          'INX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->incDecHandler->inx($opcode),
+          'DEX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->incDecHandler->dex($opcode),
+          'INY' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->incDecHandler->iny($opcode),
+          'DEY' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->incDecHandler->dey($opcode),
+          'ISC' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->incDecHandler->isc($opcode),
 
-          'BEQ' => fn (Opcode $opcode) => $this->flowControlHandler->beq($opcode),
-          'BNE' => fn (Opcode $opcode) => $this->flowControlHandler->bne($opcode),
-          'BCC' => fn (Opcode $opcode) => $this->flowControlHandler->bcc($opcode),
-          'BCS' => fn (Opcode $opcode) => $this->flowControlHandler->bcs($opcode),
-          'BPL' => fn (Opcode $opcode) => $this->flowControlHandler->bpl($opcode),
-          'BMI' => fn (Opcode $opcode) => $this->flowControlHandler->bmi($opcode),
-          'BVC' => fn (Opcode $opcode) => $this->flowControlHandler->bvc($opcode),
-          'BVS' => fn (Opcode $opcode) => $this->flowControlHandler->bvs($opcode),
-          'JMP' => fn (Opcode $opcode) => $this->flowControlHandler->jmp($opcode),
-          'JSR' => fn (Opcode $opcode) => $this->flowControlHandler->jsr($opcode),
-          'RTS' => fn (Opcode $opcode) => $this->flowControlHandler->rts($opcode),
-          'BRK' => fn (Opcode $opcode) => $this->flowControlHandler->brk($opcode),
-          'RTI' => fn (Opcode $opcode) => $this->flowControlHandler->rti($opcode),
-          'JAM' => fn (Opcode $opcode) => $this->flowControlHandler->jam($opcode),
+          'BEQ' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->beq($opcode),
+          'BNE' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->bne($opcode),
+          'BCC' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->bcc($opcode),
+          'BCS' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->bcs($opcode),
+          'BPL' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->bpl($opcode),
+          'BMI' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->bmi($opcode),
+          'BVC' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->bvc($opcode),
+          'BVS' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->bvs($opcode),
+          'JMP' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->jmp($opcode),
+          'JSR' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->jsr($opcode),
+          'RTS' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->rts($opcode),
+          'BRK' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->brk($opcode),
+          'RTI' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->rti($opcode),
+          'JAM' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flowControlHandler->jam($opcode),
 
-          'PHA' => fn (Opcode $opcode) => $this->stackHandler->pha($opcode),
-          'PLA' => fn (Opcode $opcode) => $this->stackHandler->pla($opcode),
-          'PHP' => fn (Opcode $opcode) => $this->stackHandler->php($opcode),
-          'PLP' => fn (Opcode $opcode) => $this->stackHandler->plp($opcode),
-          'PHX' => fn (Opcode $opcode) => $this->stackHandler->phx($opcode),
-          'PHY' => fn (Opcode $opcode) => $this->stackHandler->phy($opcode),
-          'PLX' => fn (Opcode $opcode) => $this->stackHandler->plx($opcode),
-          'PLY' => fn (Opcode $opcode) => $this->stackHandler->ply($opcode),
+          'PHA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->stackHandler->pha($opcode),
+          'PLA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->stackHandler->pla($opcode),
+          'PHP' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->stackHandler->php($opcode),
+          'PLP' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->stackHandler->plp($opcode),
+          'PHX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->stackHandler->phx($opcode),
+          'PHY' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->stackHandler->phy($opcode),
+          'PLX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->stackHandler->plx($opcode),
+          'PLY' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->stackHandler->ply($opcode),
 
-          'SEC' => fn (Opcode $opcode) => $this->flagsHandler->sec($opcode),
-          'CLC' => fn (Opcode $opcode) => $this->flagsHandler->clc($opcode),
-          'SEI' => fn (Opcode $opcode) => $this->flagsHandler->sei($opcode),
-          'CLI' => fn (Opcode $opcode) => $this->flagsHandler->cli($opcode),
-          'SED' => fn (Opcode $opcode) => $this->flagsHandler->sed($opcode),
-          'CLD' => fn (Opcode $opcode) => $this->flagsHandler->cld($opcode),
-          'CLV' => fn (Opcode $opcode) => $this->flagsHandler->clv($opcode),
+          'SEC' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flagsHandler->sec($opcode),
+          'CLC' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flagsHandler->clc($opcode),
+          'SEI' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flagsHandler->sei($opcode),
+          'CLI' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flagsHandler->cli($opcode),
+          'SED' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flagsHandler->sed($opcode),
+          'CLD' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flagsHandler->cld($opcode),
+          'CLV' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->flagsHandler->clv($opcode),
 
           // 65C02 CMOS-specific instructions
-          'BRA' => fn (Opcode $opcode) => $this->cmos65c02Handler->bra($opcode),
-          'STZ' => fn (Opcode $opcode) => $this->cmos65c02Handler->stz($opcode),
-          'TRB' => fn (Opcode $opcode) => $this->cmos65c02Handler->trb($opcode),
-          'TSB' => fn (Opcode $opcode) => $this->cmos65c02Handler->tsb($opcode),
-          'WAI' => fn (Opcode $opcode) => $this->cmos65c02Handler->wai($opcode),
-          'STP' => fn (Opcode $opcode) => $this->cmos65c02Handler->stp($opcode),
+          'BRA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bra($opcode),
+          'STZ' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->stz($opcode),
+          'TRB' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->trb($opcode),
+          'TSB' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->tsb($opcode),
+          'WAI' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->wai($opcode),
+          'STP' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->stp($opcode),
 
           // BBR0-7 - Branch on Bit Reset
-          'BBR0' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr0($opcode),
-          'BBR1' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr1($opcode),
-          'BBR2' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr2($opcode),
-          'BBR3' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr3($opcode),
-          'BBR4' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr4($opcode),
-          'BBR5' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr5($opcode),
-          'BBR6' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr6($opcode),
-          'BBR7' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbr7($opcode),
+          'BBR0' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbr0($opcode),
+          'BBR1' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbr1($opcode),
+          'BBR2' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbr2($opcode),
+          'BBR3' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbr3($opcode),
+          'BBR4' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbr4($opcode),
+          'BBR5' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbr5($opcode),
+          'BBR6' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbr6($opcode),
+          'BBR7' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbr7($opcode),
 
           // BBS0-7 - Branch on Bit Set
-          'BBS0' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs0($opcode),
-          'BBS1' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs1($opcode),
-          'BBS2' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs2($opcode),
-          'BBS3' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs3($opcode),
-          'BBS4' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs4($opcode),
-          'BBS5' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs5($opcode),
-          'BBS6' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs6($opcode),
-          'BBS7' => fn (Opcode $opcode) => $this->cmos65c02Handler->bbs7($opcode),
+          'BBS0' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbs0($opcode),
+          'BBS1' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbs1($opcode),
+          'BBS2' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbs2($opcode),
+          'BBS3' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbs3($opcode),
+          'BBS4' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbs4($opcode),
+          'BBS5' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbs5($opcode),
+          'BBS6' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbs6($opcode),
+          'BBS7' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->bbs7($opcode),
 
           // RMB0-7 - Reset Memory Bit
-          'RMB0' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb0($opcode),
-          'RMB1' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb1($opcode),
-          'RMB2' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb2($opcode),
-          'RMB3' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb3($opcode),
-          'RMB4' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb4($opcode),
-          'RMB5' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb5($opcode),
-          'RMB6' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb6($opcode),
-          'RMB7' => fn (Opcode $opcode) => $this->cmos65c02Handler->rmb7($opcode),
+          'RMB0' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->rmb0($opcode),
+          'RMB1' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->rmb1($opcode),
+          'RMB2' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->rmb2($opcode),
+          'RMB3' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->rmb3($opcode),
+          'RMB4' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->rmb4($opcode),
+          'RMB5' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->rmb5($opcode),
+          'RMB6' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->rmb6($opcode),
+          'RMB7' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->rmb7($opcode),
 
           // SMB0-7 - Set Memory Bit
-          'SMB0' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb0($opcode),
-          'SMB1' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb1($opcode),
-          'SMB2' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb2($opcode),
-          'SMB3' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb3($opcode),
-          'SMB4' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb4($opcode),
-          'SMB5' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb5($opcode),
-          'SMB6' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb6($opcode),
-          'SMB7' => fn (Opcode $opcode) => $this->cmos65c02Handler->smb7($opcode),
+          'SMB0' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->smb0($opcode),
+          'SMB1' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->smb1($opcode),
+          'SMB2' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->smb2($opcode),
+          'SMB3' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->smb3($opcode),
+          'SMB4' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->smb4($opcode),
+          'SMB5' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->smb5($opcode),
+          'SMB6' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->smb6($opcode),
+          'SMB7' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->cmos65c02Handler->smb7($opcode),
 
-          'NOP' => fn (Opcode $opcode) => $this->nop($opcode),
+          'NOP' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->nop($opcode),
 
           // Illegal/undocumented opcodes
-          'ALR' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->alr($opcode),
-          'ANE' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->ane($opcode),
-          'ARR' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->arr($opcode),
-          'DCP' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->dcp($opcode),
-          'LAS' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->las($opcode),
-          'LAX' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->lax($opcode),
-          'LXA' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->lxa($opcode),
-          'RRA' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->rra($opcode),
-          'SBX' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->sbx($opcode),
-          'SHA' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->sha($opcode),
-          'SHS' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->shs($opcode),
-          'SHX' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->shx($opcode),
-          'SHY' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->shy($opcode),
-          'SRE' => fn (Opcode $opcode) => $this->illegalOpcodesHandler->sre($opcode),
+          'ALR' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->alr($opcode),
+          'ANE' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->ane($opcode),
+          'ARR' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->arr($opcode),
+          'DCP' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->dcp($opcode),
+          'LAS' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->las($opcode),
+          'LAX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->lax($opcode),
+          'LXA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->lxa($opcode),
+          'RRA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->rra($opcode),
+          'SBX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->sbx($opcode),
+          'SHA' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->sha($opcode),
+          'SHS' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->shs($opcode),
+          'SHX' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->shx($opcode),
+          'SHY' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->shy($opcode),
+          'SRE' => fn (\andrewthecoder\Core\Opcode $opcode) => $this->illegalOpcodesHandler->sre($opcode),
         ];
     }
 
@@ -573,7 +575,7 @@ class CPU
      * @param Opcode $opcode The NOP opcode
      * @return int Number of cycles taken
      */
-    private function nop(Opcode $opcode): int
+    private function nop(\andrewthecoder\Core\Opcode $opcode): int
     {
         // For NOPs with operands (not Implied addressing), we need to
         // advance PC over the operand bytes by calling getAddress()

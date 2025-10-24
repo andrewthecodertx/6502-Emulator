@@ -4,11 +4,12 @@
   "type": "library",
   "keywords": [
     "6502",
+    "65c02",
     "emulator",
     "retrocomputing",
     "PHP"
   ],
-  "homepage": "https://andrewthecoder.com/MOS6502",
+  "homepage": "https://andrewthecoder.com/6502Emulator",
   "require-dev": {
     "phpunit/phpunit": "^12.3",
     "phpstan/phpstan": "^2.1"
@@ -16,7 +17,10 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "andrewthecoder\\MOS6502\\": "src/",
+      "andrewthecoder\\WDC65C02\\": "src/WDC65C02/",
+      "andrewthecoder\\WDC65C02\\Core\\": "src/Core/",
+      "andrewthecoder\\MOS6502\\": "src/MOS6502/",
+      "andrewthecoder\\MOS6502\\Core\\": "src/Core/",
       "andrewthecoder\\Tests\\": "tests/"
     }
   },

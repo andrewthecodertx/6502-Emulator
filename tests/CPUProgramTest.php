@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace andrewthecoder\Tests;
 
-use andrewthecoder\MOS6502\CPU;
-use andrewthecoder\MOS6502\StatusRegister;
+use andrewthecoder\WDC65C02\CPU;
+use andrewthecoder\WDC65C02\StatusRegister;
 use PHPUnit\Framework\TestCase;
 
 /**
