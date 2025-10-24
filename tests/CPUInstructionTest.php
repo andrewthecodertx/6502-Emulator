@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace andrewthecoder\Tests;
 
 use andrewthecoder\WDC65C02\CPU;
-use andrewthecoder\WDC65C02\StatusRegister;
+use andrewthecoder\Core\StatusRegister;
 use PHPUnit\Framework\TestCase;
 
 /**

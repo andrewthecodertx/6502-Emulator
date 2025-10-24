@@ -83,7 +83,30 @@ class FlowControl
 
     public function brk(Opcode $opcode): int
     {
-        $this->cpu->halt();
+        // BRK - Software Interrupt
+        // 1. PC is already incremented by 1 (opcode fetch)
+        // 2. Increment PC by 1 more (BRK has a dummy operand byte)
+        // 3. Push PCH to stack
+        // 4. Push PCL to stack
+        // 5. Push P to stack with B flag SET (to distinguish from hardware IRQ)
+        // 6. Set I flag to disable interrupts
+        // 7. Load PC from IRQ vector (0xFFFE-0xFFFF)
+
+        $this->cpu->pc++; // Skip the dummy operand byte
+
+        $this->cpu->pushByte(($this->cpu->pc >> 8) & 0xFF);
+        $this->cpu->pushByte($this->cpu->pc & 0xFF);
+
+        // Push status with B flag set (unlike hardware interrupts)
+        $statusValue = $this->cpu->status->toInt() | (1 << StatusRegister::BREAK_COMMAND);
+        $this->cpu->pushByte($statusValue);
+
+        $this->cpu->status->set(StatusRegister::INTERRUPT_DISABLE, true);
+
+        $irqLow = $this->cpu->getBus()->read(0xFFFE);
+        $irqHigh = $this->cpu->getBus()->read(0xFFFF);
+
+        $this->cpu->pc = ($irqHigh << 8) | $irqLow;
 
         return $opcode->getCycles();
     }

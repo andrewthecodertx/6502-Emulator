@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace andrewthecoder\Tests;
 
 use andrewthecoder\WDC65C02\CPU;
-use andrewthecoder\WDC65C02\StatusRegister;
+use andrewthecoder\Core\StatusRegister;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -75,8 +75,9 @@ class CPUInterruptTest extends TestCase
         $this->assertEquals(0x9000, $this->cpu->pc);
 
         // Return address should be pushed to stack
-        $returnAddrLow = $this->bus->read(0x0100 + $spBeforeNMI);
-        $returnAddrHigh = $this->bus->read(0x0100 + $spBeforeNMI - 1);
+        // Stack grows downward: PCH pushed first (higher address), PCL second (lower address)
+        $returnAddrHigh = $this->bus->read(0x0100 + $spBeforeNMI);
+        $returnAddrLow = $this->bus->read(0x0100 + $spBeforeNMI - 1);
         $returnAddr = ($returnAddrHigh << 8) | $returnAddrLow;
         $this->assertEquals($pcAfterNop, $returnAddr);
 
@@ -119,6 +120,12 @@ class CPUInterruptTest extends TestCase
         // Release and request again - should trigger
         $this->cpu->releaseNMI();
         $this->cpu->requestNMI();
+
+        // Consume any remaining cycles from previous operations
+        while ($this->cpu->cycles > 0) {
+            $this->cpu->step();
+        }
+
         $this->cpu->step();
         $this->assertEquals(0x9000, $this->cpu->pc, 'Should trigger after release');
     }
@@ -205,6 +212,12 @@ class CPUInterruptTest extends TestCase
 
         // IRQ still asserted (level-triggered), should trigger again
         $this->cpu->status->set(StatusRegister::INTERRUPT_DISABLE, false);
+
+        // Consume remaining cycles from previous interrupt
+        while ($this->cpu->cycles > 0) {
+            $this->cpu->step();
+        }
+
         $this->cpu->step();
         $this->assertEquals(0xA000, $this->cpu->pc, 'IRQ should trigger again (level-triggered)');
 
@@ -214,6 +227,12 @@ class CPUInterruptTest extends TestCase
         // Reset and verify no trigger
         $this->cpu->pc = 0x8000;
         $this->cpu->status->set(StatusRegister::INTERRUPT_DISABLE, false);
+
+        // Consume remaining cycles
+        while ($this->cpu->cycles > 0) {
+            $this->cpu->step();
+        }
+
         $this->cpu->step();
         $this->assertNotEquals(0xA000, $this->cpu->pc, 'IRQ should not trigger after release');
     }
@@ -261,8 +280,14 @@ class CPUInterruptTest extends TestCase
         // PC should return to where we were
         $this->assertEquals($pcBeforeInterrupt, $this->cpu->pc);
 
-        // Status flags should be restored
-        $this->assertEquals($statusBeforeInterrupt, $this->cpu->status->toInt());
+        // Status flags should be restored (mask out B and unused flags which are not real CPU flags)
+        // B (bit 4) and unused (bit 5) only exist when pushed to stack, not in the actual CPU status
+        $mask = 0b11001111; // Mask out bits 4 and 5
+        $this->assertEquals(
+            $statusBeforeInterrupt & $mask,
+            $this->cpu->status->toInt() & $mask,
+            'CPU flags (N,V,D,I,Z,C) should be restored'
+        );
     }
 
     public function testInterruptPriority(): void

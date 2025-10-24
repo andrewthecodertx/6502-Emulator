@@ -240,10 +240,18 @@ class CPU
      *
      * Calls step() repeatedly until the instruction completes and all cycles
      * are consumed. Useful for debugging or single-stepping through instructions.
+     *
+     * If there are pending cycles (e.g. from a previous interrupt), those are
+     * consumed first before fetching and executing the next instruction.
      */
     public function executeInstruction(): void
     {
-        // Always step at least once to fetch and begin instruction execution
+        // First, consume any pending cycles from previous operations (e.g. interrupts)
+        while (!$this->halted && $this->cycles > 0) {
+            $this->step();
+        }
+
+        // Now fetch and execute the next instruction
         $this->step();
 
         // Continue stepping until all instruction cycles are consumed
@@ -376,6 +384,7 @@ class CPU
         // 4. Push status register to stack
         // 5. Set I flag to disable further IRQs
         // 6. Load PC from IRQ vector (0xFFFE-0xFFFF)
+        // NOTE: IRQ is level-triggered - remains asserted until releaseIRQ() is called
 
         $this->pushByte(($this->pc >> 8) & 0xFF);
         $this->pushByte($this->pc & 0xFF);
@@ -390,7 +399,8 @@ class CPU
 
         $this->pc = ($irqHigh << 8) | $irqLow;
         $this->cycles += 7;
-        $this->irqPending = false;
+        // NOTE: Do NOT clear irqPending here - IRQ is level-triggered
+        // and remains asserted until explicitly released with releaseIRQ()
     }
 
     private function initializeInstructionHandlers(): void
@@ -496,7 +506,7 @@ class CPU
      * Does nothing but must consume operand bytes for multi-byte NOPs.
      * For illegal NOPs (DOP/TOP), the operand is read but ignored.
      *
-     * @param Opcode $opcode The NOP opcode
+     * @param \andrewthecoder\Core\Opcode $opcode The NOP opcode
      * @return int Number of cycles taken
      */
     private function nop(\andrewthecoder\Core\Opcode $opcode): int
