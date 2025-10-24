@@ -17,6 +17,7 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
+      "andrewthecoder\\Core\\": "src/Core/",
       "andrewthecoder\\WDC65C02\\": "src/WDC65C02/",
       "andrewthecoder\\WDC65C02\\Core\\": "src/Core/",
       "andrewthecoder\\MOS6502\\": "src/MOS6502/",
