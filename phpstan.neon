@@ -3,11 +3,5 @@ parameters:
     paths:
         - src
     excludePaths:
-    ignoreErrors:
-        # UART constants are part of the W65C51N specification
-        - '#Constant Emulator\\Systems\\Eater\\UART::STATUS_FRAMING_ERROR is unused#'
-        - '#Constant Emulator\\Systems\\Eater\\UART::STATUS_OVERRUN_ERROR is unused#'
-        # UART internal state management
-        - '#Property Emulator\\Systems\\Eater\\UART::\$transmitData is never read, only written#'
-        - '#Property Emulator\\Systems\\Eater\\UART::\$irqEnabled is never read, only written#'
+        - src/Systems
     tmpDir: /tmp/phpstan

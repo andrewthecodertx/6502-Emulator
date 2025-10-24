@@ -2,7 +2,8 @@
 
 A fully functional 6502 microprocessor emulator written entirely in PHP,
 packaged as a Composer library for building custom 6502-based systems. Features
-two CPU cores (NMOS 6502 and WDC 65C02) that can be paired with different system implementations.
+two CPU cores (NMOS 6502 and WDC 65C02) that can be paired with different system
+implementations.
 
 ## Installation
 
@@ -16,12 +17,65 @@ composer require andrewthecoder/6502-emulator
 
 ### Dual CPU Core Support
 
-* **MOS 6502 (NMOS)** - Original MOS Technology 6502 with 56 documented instructions and illegal opcodes
-* **WDC 65C02 (CMOS)** - Western Design Center 65C02 with 70 instructions including BRA, STZ, PHX/PHY, bit manipulation, and more
-* **Hybrid execution model** combining JSON-driven and custom handler-based instruction processing
+* **MOS 6502** - Original MOS Technology 6502 with 56 documented instructions
+and illegal opcodes
+* **WDC 65C02** - Western Design Center 65C02 with 70 instructions including
+BRA, STZ, PHX/PHY, bit manipulation, and more
+* **Hybrid execution model** combining JSON-driven and custom handler-based
+instruction processing
 * **Interrupt support** (NMI, IRQ, RESET) with proper edge/level triggering
-* **CPU monitoring** for debugging and profiling with instruction tracing and cycle counting
+* **CPU monitoring** for debugging and profiling with instruction tracing and
+cycle counting
 * **Comprehensive PHPDoc documentation** for IDE support
+
+## CPU Variants Explained
+
+This library provides two different 6502 CPU implementations:
+
+### MOS 6502 (Original)
+
+The **MOS 6502** refers to the original microprocessor designed by MOS
+Technology in 1975. It uses **NMOS** (N-channel Metal-Oxide-Semiconductor)
+fabrication technology. While you may see it referred to as "NMOS 6502" in
+technical documentation, the official product name is simply **MOS 6502** or **6502**.
+
+**Characteristics:**
+
+* 56 documented instructions
+* Includes illegal/undocumented opcodes used by some software
+* Hardware bugs (JMP indirect page boundary bug, decimal mode doesn't set N/V/Z
+flags)
+* Found in: Commodore 64, Apple II/II+, NES, Atari 2600/5200/7800
+
+### WDC 65C02 (Enhanced)
+
+The **WDC 65C02** (or simply **65C02**) is an enhanced version designed by
+Western Design Center using **CMOS** (Complementary Metal-Oxide-Semiconductor)
+fabrication technology. The "C" in the name literally stands for CMOS. This
+version fixed bugs from the original and added new instructions.
+
+**Characteristics:**
+
+* 70 instructions (14 additional instruction types)
+* Fixed hardware bugs from the original
+* Better power efficiency (CMOS technology)
+* New addressing modes and bit manipulation instructions
+* Found in: Apple IIc/IIe, later Commodore models, modern 6502-based systems
+
+### When to Use Which?
+
+**Use `andrewthecoder\MOS6502\CPU` when:**
+
+* Emulating systems that require the original chip (NES, C64, original Apple II)
+* You need illegal opcodes for compatibility
+* You want hardware-accurate behavior including bugs
+
+**Use `andrewthecoder\WDC65C02\CPU` when:**
+
+* Building modern 6502-based projects
+* You want the additional instructions (BRA, STZ, etc.)
+* You need the bug fixes (JMP indirect, decimal mode)
+* Emulating systems that use the 65C02 (Apple IIe, IIc)
 
 ## Quick Start
 
@@ -32,14 +86,16 @@ composer require andrewthecoder/6502-emulator
 
 require 'vendor/autoload.php';
 
-// Choose your CPU variant:
-// For NMOS 6502 (original):
-use andrewthecoder\MOS6502\CPU;
-use andrewthecoder\MOS6502\BusInterface;
+// Import core interfaces (shared by both CPUs)
+use andrewthecoder\Core\BusInterface;
+use andrewthecoder\Core\StatusRegister;
 
-// OR for WDC 65C02 (CMOS with additional instructions):
+// Choose your CPU variant:
+// For MOS 6502 (original with illegal opcodes):
+use andrewthecoder\MOS6502\CPU;
+
+// OR for WDC 65C02 (enhanced with additional instructions):
 // use andrewthecoder\WDC65C02\CPU;
-// use andrewthecoder\WDC65C02\BusInterface;
 
 // Implement a simple bus with 64KB RAM
 class SimpleBus implements BusInterface
@@ -114,35 +170,38 @@ and `ld65` in `bin/`
 
 ## Architecture
 
-The emulator uses a modular, reusable architecture designed for Composer integration with two separate CPU cores.
+The emulator uses a modular, reusable architecture with three main namespaces:
 
-### Core Components
+### Namespace Structure
 
-The emulator provides two complete CPU implementations:
+**`andrewthecoder\Core`** - Shared interfaces and components:
 
-**`andrewthecoder\MOS6502` namespace** - Original NMOS 6502:
-* **CPU** - MOS Technology 6502 (NMOS) with 56 documented instructions
-* Includes illegal/undocumented opcodes
-* JMP indirect has page boundary bug (hardware-accurate)
-* Decimal mode doesn't set N, V, Z flags (hardware-accurate)
-
-**`andrewthecoder\WDC65C02` namespace** - CMOS 65C02:
-* **CPU** - WDC 65C02S with 70 instructions
-* Additional instructions: BRA, STZ, PHX/PHY/PLX/PLY, TRB/TSB, WAI/STP
-* Bit manipulation: BBR/BBS, RMB/SMB instructions
-* Fixed JMP indirect page boundary bug
-* Proper decimal mode flag handling
-
-**Shared interfaces (in both namespaces):**
-* **BusInterface** - Abstraction for system buses to implement memory-mapped I/O
+* **BusInterface** - Contract for system buses (memory-mapped I/O)
 * **RAMInterface** - Contract for RAM implementations
 * **ROMInterface** - Contract for ROM implementations
 * **PeripheralInterface** - Contract for memory-mapped peripherals
-* **InstructionRegister** - Loads and provides access to opcode definitions from `opcodes.json`
-* **InstructionInterpreter** - Executes instructions using declarative JSON metadata
-* **StatusRegister** - Manages the 8 CPU status flags (NV-BDIZC)
-* **CPUMonitor** - Optional debugging and profiling tool
-* **Instructions/** - Custom handlers for complex opcodes
+* **StatusRegister** - CPU status flags (NV-BDIZC)
+* **Opcode** - Opcode metadata container
+
+**`andrewthecoder\MOS6502`** - MOS 6502 (Original):
+
+* **CPU** - MOS Technology 6502 with 56 documented instructions
+* Includes illegal/undocumented opcodes
+* Hardware-accurate bugs (JMP indirect page boundary, decimal mode flags)
+* **InstructionRegister** - MOS 6502 opcode definitions
+* **InstructionInterpreter** - JSON-driven instruction execution
+* **CPUMonitor** - Optional debugging tool
+* **Instructions/** - Complex instruction handlers (ADC/SBC, branches, etc.)
+
+**`andrewthecoder\WDC65C02`** - WDC 65C02 (Enhanced):
+
+* **CPU** - WDC 65C02S with 70 instructions
+* Additional instructions: BRA, STZ, PHX/PHY/PLX/PLY, TRB/TSB, WAI/STP, bit manipulation
+* Bug fixes (JMP indirect, decimal mode)
+* **InstructionRegister** - WDC 65C02 opcode definitions
+* **InstructionInterpreter** - JSON-driven instruction execution
+* **CPUMonitor** - Optional debugging tool
+* **Instructions/** - Complex instruction handlers including CMOS-specific opcodes
 
 ### Building Your Own System
 
@@ -184,22 +243,37 @@ peripherals (coming soon)
 ## Project Structure
 
 ```
-src/                            # andrewthecoder\MOS6502 namespace
-├── CPU.php                     # Main CPU emulator
-├── BusInterface.php            # Bus abstraction
-├── InstructionRegister.php     # Opcode registry
-├── InstructionInterpreter.php  # JSON-driven execution
-├── StatusRegister.php          # CPU flags
-├── Opcode.php                  # Opcode metadata
-├── CPUMonitor.php              # Debugging tool
-├── opcodes.json                # Complete opcode definitions
-├── Instructions/               # Complex instruction handlers
-│   ├── Arithmetic.php          # ADC, SBC with overflow
-│   ├── ShiftRotate.php         # ASL, LSR, ROL, ROR
-│   ├── FlowControl.php         # Branches and jumps
-│   ├── Stack.php               # Stack operations
-│   └── ...                     # Other handlers
+src/
+├── Core/                       # andrewthecoder\Core - Shared components
+│   ├── BusInterface.php        # Bus contract
+│   ├── RAMInterface.php        # RAM contract
+│   ├── ROMInterface.php        # ROM contract
+│   ├── PeripheralInterface.php # Peripheral contract
+│   ├── StatusRegister.php      # CPU status flags
+│   └── Opcode.php              # Opcode metadata
 │
+├── MOS6502/                    # andrewthecoder\MOS6502 - MOS 6502 CPU
+│   ├── CPU.php                 # Main MOS 6502 CPU
+│   ├── InstructionRegister.php # MOS 6502 opcode registry
+│   ├── InstructionInterpreter.php # JSON-driven execution
+│   ├── CPUMonitor.php          # Debugging tool
+│   ├── opcodes.json            # MOS 6502 opcodes
+│   └── Instructions/           # Instruction handlers
+│       ├── Arithmetic.php      # ADC, SBC
+│       ├── IllegalOpcodes.php  # Undocumented opcodes
+│       └── ...
+│
+├── WDC65C02/                   # andrewthecoder\WDC65C02 - WDC 65C02 CPU
+│   ├── CPU.php                 # Main WDC 65C02 CPU
+│   ├── InstructionRegister.php # WDC 65C02 opcode registry
+│   ├── InstructionInterpreter.php # JSON-driven execution
+│   ├── CPUMonitor.php          # Debugging tool
+│   ├── opcodes.json            # WDC 65C02 opcodes
+│   └── Instructions/           # Instruction handlers
+│       ├── CMOS65C02.php       # CMOS-specific opcodes
+│       └── ...
+│
+
 ```
 
 ## Using in External Projects
@@ -211,8 +285,8 @@ After installing via Composer, you can use the CPU core to build any 6502-based 
 ```php
 <?php
 
+use andrewthecoder\Core\BusInterface;
 use andrewthecoder\MOS6502\CPU;
-use andrewthecoder\MOS6502\BusInterface;
 
 class MyBus implements BusInterface {
     private array $ram = [];
@@ -242,6 +316,9 @@ $cpu->reset();
 
 ```php
 <?php
+
+use andrewthecoder\Core\BusInterface;
+use andrewthecoder\Core\PeripheralInterface;
 
 class MyBus implements BusInterface {
     private RAM $ram;
@@ -282,9 +359,13 @@ Contributions are welcome! The modular architecture makes it easy to:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/andrewthecodertx/6502-Emulator/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License - see the
+[LICENSE](https://github.com/andrewthecodertx/6502-Emulator/blob/main/LICENSE)
+file for details.
 
 ## Acknowledgments
 
 * **6502.org** - For comprehensive 6502 documentation
 * **cc65 project** - For the assembler and toolchain
+* **Claude Code** - Documentation, README, code comments, and PHPDocs were
+generated and refined using [Claude Code](https://claude.ai/code) by Anthropic
