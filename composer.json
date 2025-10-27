@@ -19,7 +19,10 @@
     "psr-4": {
       "andrewthecoder\\Core\\": "src/Core/",
       "andrewthecoder\\WDC65C02\\": "src/WDC65C02/",
-      "andrewthecoder\\MOS6502\\": "src/MOS6502/"
+      "andrewthecoder\\MOS6502\\": "src/MOS6502/",
+      "Emulator\\Systems\\AppleI\\": "src/Systems/AppleI/",
+      "Emulator\\Systems\\Eater\\": "src/Systems/Eater/",
+      "Emulator\\Systems\\C64\\": "src/Systems/C64/"
     }
   },
   "autoload-dev": {
